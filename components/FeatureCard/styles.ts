@@ -9,6 +9,7 @@ export const featureCardStyles = StyleSheet.create({
     borderRadius:    spacing.xs,
     overflow:        'hidden',
   },
+  // Matches Figma exactly: left 19px, top 31px, width 96px
   title: {
     position:      'absolute',
     top:           31,
@@ -18,11 +19,11 @@ export const featureCardStyles = StyleSheet.create({
     color:         colors['brand-text-100'],
     lineHeight:    fontSize.h2 * 1.15,
     letterSpacing: -0.78,
-    width:         110,
+    width:         96,
   },
+  // right and width are injected per-card via inline style
   image: {
     position: 'absolute',
     bottom:   20,
-    right:    16,
   },
 });

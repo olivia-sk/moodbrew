@@ -42,7 +42,7 @@ export const text = StyleSheet.create({
     fontSize:      fontSize.h1,
     color:         colors['dark-100'],
     letterSpacing: -0.96,
-    lineHeight:    fontSize.h1,
+    lineHeight:    fontSize.h1 * 1.25,  // extra room for serif ascenders
   },
   /** h2 serif — card titles */
   h2: {

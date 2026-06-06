@@ -3,18 +3,18 @@ import { colors, spacing, fontSize, fonts } from '../../theme';
 
 export const navStyles = StyleSheet.create({
   bar: {
-    flexDirection:     'row',
-    justifyContent:    'space-between',
-    alignItems:        'center',
-    paddingHorizontal: spacing['4xl'],
-    paddingVertical:   spacing.md,
-    backgroundColor:   colors['light-100'],
-    borderTopWidth:    1,
-    borderTopColor:    colors['dark-100-o20'],
+    flexDirection:   'row',
+    alignItems:      'center',
+    paddingVertical: spacing.md,
+    backgroundColor: colors['light-100'],
+    borderTopWidth:  1,
+    borderTopColor:  colors['dark-100-o20'],
   },
   tab: {
-    alignItems: 'center',
-    gap:        spacing['stack-gap'],
+    flex:           1,
+    alignItems:     'center',
+    justifyContent: 'center',
+    gap:            spacing['stack-gap'],
   },
   label: {
     fontFamily:    fonts.mono,
