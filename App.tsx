@@ -10,7 +10,7 @@ import {
   IBMPlexMono_400Regular,
   useFonts as useMonoFonts,
 } from '@expo-google-fonts/ibm-plex-mono';
-import HomeScreen from './screens/Home';
+import HomeScreen from './screens/Home/Home';
 
 SplashScreen.preventAutoHideAsync();
 

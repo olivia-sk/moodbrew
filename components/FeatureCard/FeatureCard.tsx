@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ImageSourcePropType } from 'react-native';
-import { featureCardStyles as s } from '../styles/featurecard';
+import { featureCardStyles as s } from './styles';
 
 interface FeatureCardProps {
   title: string;

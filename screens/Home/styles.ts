@@ -1,10 +1,7 @@
 import { StyleSheet } from 'react-native';
-import { colors, spacing, fontSize, fonts } from '../theme';
+import { colors, spacing, fontSize, fonts } from '../../theme';
 
-const SHELF_W = 358;
-const SHELF_H = 267;
-
-export const SHELF_DIMS = { width: SHELF_W, height: SHELF_H } as const;
+export const SHELF_DIMS = { width: 358, height: 267 } as const;
 
 export const homeStyles = StyleSheet.create({
   // ── Header ──────────────────────────────────────────────────────────────
@@ -38,13 +35,13 @@ export const homeStyles = StyleSheet.create({
     height: 24,
   },
 
-  // ── Shelf section ────────────────────────────────────────────────────────
+  // ── Shelf ────────────────────────────────────────────────────────────────
   section: {
     gap: spacing.xl,
   },
   shelfContainer: {
-    width:    SHELF_W,
-    height:   SHELF_H,
+    width:  358,
+    height: 267,
   },
   shelfImage: {
     position: 'absolute',
@@ -64,7 +61,7 @@ export const homeStyles = StyleSheet.create({
     backgroundColor: colors['light-100-o20'],
   },
 
-  // ── Feature cards row ────────────────────────────────────────────────────
+  // ── Feature cards ────────────────────────────────────────────────────────
   featureRow: {
     flexDirection:  'row',
     justifyContent: 'space-between',

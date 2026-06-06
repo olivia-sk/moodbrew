@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, spacing, fontSize, fonts } from '../theme';
+import { colors, spacing, fontSize, fonts } from '../../theme';
 
 export const featureCardStyles = StyleSheet.create({
   card: {

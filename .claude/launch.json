@@ -1,0 +1,30 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "expo-start",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "start"],
+      "port": 8081,
+      "autoPort": true
+    },
+    {
+      "name": "expo-web",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "web"],
+      "port": 8081
+    },
+    {
+      "name": "expo-android",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "android"],
+      "port": 8081
+    },
+    {
+      "name": "expo-ios",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "ios"],
+      "port": 8081
+    }
+  ]
+}

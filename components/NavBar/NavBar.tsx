@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { colors } from '../theme';
-import { navStyles as s } from '../styles/navbar';
+import { colors } from '../../theme';
+import { navStyles as s } from './styles';
 
 export type NavTab = 'home' | 'pantry' | 'journal';
 
