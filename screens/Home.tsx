@@ -2,225 +2,214 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
+  Image,
   ScrollView,
+  StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
 } from 'react-native';
 import { colors, spacing, fontSize, fonts } from '../theme';
+import NavBar, { NavTab } from '../components/NavBar';
+import FeatureCard from '../components/FeatureCard';
 
-const MOODS = [
-  { id: 'calm',      label: 'Calm',      emoji: '🌿' },
-  { id: 'energized', label: 'Energized', emoji: '⚡' },
-  { id: 'focused',   label: 'Focused',   emoji: '🎯' },
-  { id: 'cozy',      label: 'Cozy',      emoji: '🍂' },
-  { id: 'refreshed', label: 'Refreshed', emoji: '💧' },
-  { id: 'joyful',    label: 'Joyful',    emoji: '☀️' },
-] as const;
+// ─── Assets ───────────────────────────────────────────────────────────────────
+const shelfImg   = require('../assets/images/shelf.png');
+const tinImg     = require('../assets/images/tin.png');
+const kettleImg  = require('../assets/images/kettle.png');
+const settingsImg = require('../assets/images/settings.png');
 
-type MoodId = (typeof MOODS)[number]['id'];
-type Mood   = (typeof MOODS)[number];
+// ─── Shelf slot rows ──────────────────────────────────────────────────────────
+// 3 rows × 4 slots, slot size 50×40, gap 24, starting at x=43
+// Row y positions within the 267px shelf image: 51, 130, 206
+const SLOT_ROWS = [51, 130, 206];
+const SLOT_COUNT = 4;
+const SLOT_W = 50;
+const SLOT_H = 40;
+const SLOT_GAP = spacing.xl;     // 24
+const SHELF_LEFT = 43;
 
-const PLACEHOLDER_TEAS: Record<MoodId, string> = {
-  calm:      'Chamomile & Lavender',
-  energized: 'Ginger Lemon Green',
-  focused:   'Matcha Ceremonial Grade',
-  cozy:      'Masala Chai',
-  refreshed: 'Peppermint Spearmint',
-  joyful:    'Hibiscus Rose Hip',
-};
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+function formatDate(d: Date) {
+  const day  = d.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+  const mon  = d.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+  const date = d.getDate();
+  return `${day}, ${mon} ${date}`;
+}
 
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'GOOD MORNING,';
+  if (h < 17) return 'GOOD AFTERNOON,';
+  return 'GOOD EVENING,';
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
-  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
+  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const today = new Date();
 
   return (
     <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors['light-200']} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
+
+      {/* ── Scrollable content ── */}
       <ScrollView
         contentContainerStyle={s.scroll}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Header ── */}
         <View style={s.header}>
-          <Text style={s.wordmark}>MoodBrew</Text>
-          <Text style={s.tagline}>Let your mood guide your cup.</Text>
+          <View style={s.headerLeft}>
+            <Text style={s.date}>{formatDate(today)}</Text>
+            <Text style={s.greeting}>
+              {greeting()}{'\n'}
+              <Text style={s.name}>[NAME]</Text>
+            </Text>
+          </View>
+          <TouchableOpacity style={s.settingsBtn} activeOpacity={0.7}>
+            <Image
+              source={settingsImg}
+              style={s.settingsIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </View>
 
-        {/* ── Mood grid ── */}
+        {/* ── Shelf section ── */}
         <View style={s.section}>
-          <Text style={s.sectionLabel}>How are you feeling?</Text>
-          <View style={s.moodGrid}>
-            {MOODS.map((mood) => {
-              const active = selectedMood?.id === mood.id;
-              return (
-                <TouchableOpacity
-                  key={mood.id}
-                  style={[s.moodChip, active && s.moodChipActive]}
-                  onPress={() => setSelectedMood(active ? null : mood)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={s.moodEmoji}>{mood.emoji}</Text>
-                  <Text style={[s.moodLabel, active && s.moodLabelActive]}>
-                    {mood.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <Text style={s.h1}>My Tea Collection</Text>
+
+          {/* Shelf with slot overlays */}
+          <View style={s.shelfContainer}>
+            <Image source={shelfImg} style={s.shelfImage} resizeMode="cover" />
+            {SLOT_ROWS.map((rowY) => (
+              <View
+                key={rowY}
+                style={[s.slotRow, { top: rowY, left: SHELF_LEFT }]}
+              >
+                {Array.from({ length: SLOT_COUNT }).map((_, i) => (
+                  <View key={i} style={s.slot} />
+                ))}
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* ── Recommendation ── */}
-        <View style={s.section}>
-          {selectedMood ? (
-            <View style={s.card}>
-              <Text style={s.cardEyebrow}>Your Brew</Text>
-              <Text style={s.cardTitle}>{PLACEHOLDER_TEAS[selectedMood.id]}</Text>
-              <View style={s.divider} />
-              <Text style={s.cardBody}>
-                AI-powered recommendation coming soon. Your taste profile is being
-                brewed.
-              </Text>
-              <Text style={s.cardMono}>mood · {selectedMood.label.toLowerCase()}</Text>
-            </View>
-          ) : (
-            <View style={[s.card, s.cardEmpty]}>
-              <Text style={s.emptyText}>
-                Select a mood above to discover your perfect cup.
-              </Text>
-            </View>
-          )}
+        {/* ── Feature cards ── */}
+        <View style={s.featureRow}>
+          <FeatureCard
+            title={'Discovery\nMode'}
+            image={tinImg}
+            width={148}
+            imageWidth={56}
+            imageHeight={72}
+          />
+          <FeatureCard
+            title="Brew by Mood"
+            image={kettleImg}
+            width={189}
+            imageWidth={100}
+            imageHeight={77}
+          />
         </View>
       </ScrollView>
+
+      {/* ── NavBar — fixed at bottom ── */}
+      <NavBar activeTab={activeTab} onPress={setActiveTab} />
     </SafeAreaView>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const SHELF_W = 358;
+const SHELF_H = 267;
+
 const s = StyleSheet.create({
   safe: {
-    flex: 1,
-    backgroundColor: colors['light-200'],
+    flex:            1,
+    backgroundColor: colors['light-100'],   // white
   },
   scroll: {
-    paddingHorizontal: spacing['padding-horizontal'],
-    paddingBottom:     spacing['3xl'],
+    paddingHorizontal: 16,              // matches Figma left-[16px]; keeps shelf at 358px
+    paddingBottom:     spacing['3xl'],  // 48
+    gap:               spacing['2xl'],  // 32
   },
 
   // Header
   header: {
-    paddingTop:    spacing['padding-vertical'],
-    marginBottom:  spacing['2xl'],
-    gap:           spacing.sm,
+    flexDirection:  'row',
+    justifyContent: 'space-between',
+    alignItems:     'flex-start',
+    paddingTop:     spacing.lg,                         // 16
   },
-  wordmark: {
-    fontFamily:  fonts.serif,
-    fontSize:    fontSize.display,
-    color:       colors['brand-text-100'],
-    lineHeight:  fontSize.display * 1.1,
-    letterSpacing: -0.5,
+  headerLeft: {
+    gap: spacing.xs,                                    // 4
   },
-  tagline: {
+  date: {
+    fontFamily: fonts.mono,
+    fontSize:   fontSize.mono,                          // 13
+    color:      colors['brand-text-200'],               // #BDBDBD
+    letterSpacing: 0.3,
+  },
+  greeting: {
+    fontFamily: fonts.mono,
+    fontSize:   fontSize.mono,                          // 13
+    color:      colors['brand-text-100'],               // #121212
+    letterSpacing: 0.3,
+    lineHeight: fontSize.mono * 1.5,
+  },
+  name: {
     fontFamily: fonts.mono,
     fontSize:   fontSize.mono,
-    color:      colors['light-500'],
-    letterSpacing: 0.2,
-  },
-
-  // Section
-  section: {
-    marginBottom: spacing.xl,
-    gap:          spacing.md,
-  },
-  sectionLabel: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize['mono-small'],
-    color:         colors['brand-text-200'],
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-
-  // Mood chips
-  moodGrid: {
-    flexDirection: 'row',
-    flexWrap:      'wrap',
-    gap:           spacing.sm,
-  },
-  moodChip: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    gap:            spacing.xs,
-    paddingVertical:  spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius:   100,
-    backgroundColor: colors['light-100'],
-    borderWidth:    1,
-    borderColor:    colors['light-300'],
-  },
-  moodChipActive: {
-    backgroundColor: colors['dark-100'],
-    borderColor:     colors['dark-100'],
-  },
-  moodEmoji: {
-    fontSize: 15,
-  },
-  moodLabel: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
     color:      colors['brand-text-100'],
   },
-  moodLabelActive: {
-    color: colors['light-100'],
+  settingsBtn: {
+    padding: spacing.xs,
+  },
+  settingsIcon: {
+    width:  24,
+    height: 24,
   },
 
-  // Card
-  card: {
-    backgroundColor: colors['light-100'],
-    borderRadius:    16,
-    padding:         spacing['card-padding'],
-    borderWidth:     1,
-    borderColor:     colors['light-300'],
-    gap:             spacing.sm,
+  // Shelf
+  section: {
+    gap: spacing.xl,                                    // 24
   },
-  cardEmpty: {
-    alignItems: 'center',
-    paddingVertical: spacing['2xl'],
+  h1: {
+    fontFamily:    fonts.serif,
+    fontSize:      fontSize.h1,                         // 32
+    color:         colors['dark-100'],
+    letterSpacing: -0.96,
+    lineHeight:    fontSize.h1,
   },
-  cardEyebrow: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize['mono-small'],
-    color:         colors['brand-text-200'],
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  shelfContainer: {
+    width:    SHELF_W,
+    height:   SHELF_H,
+    position: 'relative',
   },
-  cardTitle: {
-    fontFamily:   fonts.serif,
-    fontSize:     fontSize.h2,
-    color:        colors['brand-text-100'],
-    lineHeight:   fontSize.h2 * 1.2,
-    letterSpacing: -0.3,
+  shelfImage: {
+    position: 'absolute',
+    top:      0,
+    left:     0,
+    right:    0,
+    bottom:   0,
   },
-  divider: {
-    height:          1,
-    backgroundColor: colors['light-300'],
-    marginVertical:  spacing.xs,
+  slotRow: {
+    position:      'absolute',
+    flexDirection: 'row',
+    gap:           SLOT_GAP,
   },
-  cardBody: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['light-500'],
-    lineHeight: fontSize['body-small'] * 1.6,
+  slot: {
+    width:           SLOT_W,
+    height:          SLOT_H,
+    backgroundColor: colors['light-100-o20'],           // rgba(255,255,255,0.2)
   },
-  cardMono: {
-    fontFamily: fonts.mono,
-    fontSize:   fontSize['mono-small'],
-    color:      colors['brand-text-200'],
-    marginTop:  spacing.xs,
-  },
-  emptyText: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize.body,
-    color:      colors['brand-text-200'],
-    textAlign:  'center',
-    lineHeight: fontSize.body * 1.5,
+
+  // Feature cards
+  featureRow: {
+    flexDirection:  'row',
+    justifyContent: 'space-between',
+    alignItems:     'flex-start',
   },
 });
