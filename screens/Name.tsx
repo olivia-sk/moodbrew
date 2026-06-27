@@ -1,10 +1,10 @@
 /**
  * screens/Name.tsx
- * Figma node 49:342 "name"
+ * figma node 49:342 "name"
  *
- * Collects the user's display name and writes it to Supabase
- * user_metadata.name via updateUser(). After saving, onSuccess()
- * is called to navigate to the Home screen.
+ * collects the user's display name and writes it to supabase
+ * user_metadata.name via updateUser(). after saving, onSuccess()
+ * is called to navigate to the home screen.
  */
 import React, { useState } from 'react';
 import {
@@ -18,14 +18,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
 } from 'react-native';
-import { colors, spacing } from '../theme';
 import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
 
 interface Props {
-  /** Called after name is saved — navigate to Home */
   onSuccess: () => void;
 }
 
@@ -40,7 +37,7 @@ export default function NameScreen({ onSuccess }: Props) {
       return;
     }
     setLoading(true);
-    // Persist name in Supabase user_metadata — readable via session.user.user_metadata.name
+    // persist name in supabase user_metadata, readable via session.user.user_metadata.name
     const { error } = await supabase.auth.updateUser({
       data: { name: trimmed },
     });
@@ -53,26 +50,26 @@ export default function NameScreen({ onSuccess }: Props) {
   };
 
   return (
-    <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
+    <SafeAreaView className={s.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/*
-          justifyContent: 'space-between' separates the top group (question + input)
-          from the Continue button, matching the Figma vertical rhythm.
+          justify-between separates the top group (question + input)
+          from the continue button, matching the figma vertical rhythm.
         */}
-        <View style={[s.content, ls.content]}>
+        <View className={`${s.content} justify-between`}>
 
-          {/* Question + name field grouped at the top */}
-          <View style={s.nameTop}>
-            <Text style={s.question}>What should{'\n'}we call you?</Text>
+          {/* question + name field grouped at the top */}
+          <View className={s.nameTop}>
+            <Text className={s.question}>What should{'\n'}we call you?</Text>
             <TextInput
-              style={s.input}
-              placeholder="name"
-              placeholderTextColor={colors['brand-text-200']}
+              className={s.input}
+              placeholder="NAME"
+              placeholderTextColor="#BDBDBD"
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
@@ -82,16 +79,16 @@ export default function NameScreen({ onSuccess }: Props) {
             />
           </View>
 
-          {/* Continue button anchored to the bottom */}
+          {/* continue button anchored to the bottom */}
           <TouchableOpacity
-            style={s.primaryBtn}
+            className={s.primaryBtn}
             activeOpacity={0.85}
             onPress={handleContinue}
             disabled={loading}
           >
             {loading
-              ? <ActivityIndicator color={colors['light-100']} />
-              : <Text style={s.primaryBtnText}>Continue</Text>
+              ? <ActivityIndicator color="#FFFFFF" />
+              : <Text className={s.primaryBtnText}>Continue</Text>
             }
           </TouchableOpacity>
 
@@ -100,10 +97,3 @@ export default function NameScreen({ onSuccess }: Props) {
     </SafeAreaView>
   );
 }
-
-// Local override — space-between separates top group from button
-const ls = StyleSheet.create({
-  content: {
-    justifyContent: 'space-between',
-  },
-});

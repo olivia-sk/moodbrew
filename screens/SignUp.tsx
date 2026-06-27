@@ -1,8 +1,7 @@
 /**
  * screens/SignUp.tsx
- * Email + password sign-up — same visual design as SignIn (Figma 51:364)
- * adapted for account creation. After sign-up the user proceeds to the
- * Name screen to set their display name.
+ * email + password sign-up - figma node 182:333.
+ * after sign-up the user proceeds to the name screen to set their display name.
  */
 import React, { useState } from 'react';
 import {
@@ -17,14 +16,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { colors } from '../theme';
 import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
+import MoodBrewDoodle from '../assets/images/mood-brew.svg';
 
 interface Props {
-  /** Called after a successful sign-up — navigate to Name screen */
   onSuccess:     () => void;
-  /** Navigate back to Sign In */
   onSignInPress: () => void;
 }
 
@@ -51,34 +48,35 @@ export default function SignUpScreen({ onSuccess, onSignInPress }: Props) {
     if (error) {
       Alert.alert('Sign up failed', error.message);
     } else {
-      // Account created — move to name collection
+      // account created, move to name collection
       onSuccess();
     }
   };
 
   return (
-    <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
+    <SafeAreaView className={s.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={s.content}>
+        <View className={s.content}>
 
-          {/* Wordmark */}
-          <View style={s.topSection}>
-            <Text style={s.wordmark}>Mood Brew</Text>
+          {/* wordmark + doodle */}
+          <View className={s.topSection}>
+            <Text className={s.wordmark}>Mood Brew</Text>
+            <MoodBrewDoodle width={160} height={116} />
           </View>
 
-          {/* Form */}
-          <View style={s.bottomSection}>
+          {/* form */}
+          <View className={s.bottomSection}>
 
-            <View style={s.form}>
+            <View className={s.form}>
               <TextInput
-                style={s.input}
-                placeholder="Email"
-                placeholderTextColor={colors['brand-text-200']}
+                className={s.input}
+                placeholder="EMAIL"
+                placeholderTextColor="#BDBDBD"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -87,9 +85,9 @@ export default function SignUpScreen({ onSuccess, onSignInPress }: Props) {
                 returnKeyType="next"
               />
               <TextInput
-                style={s.input}
-                placeholder="Password"
-                placeholderTextColor={colors['brand-text-200']}
+                className={s.input}
+                placeholder="PASSWORD"
+                placeholderTextColor="#BDBDBD"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -99,21 +97,21 @@ export default function SignUpScreen({ onSuccess, onSignInPress }: Props) {
             </View>
 
             <TouchableOpacity
-              style={s.primaryBtn}
+              className={s.primaryBtn}
               activeOpacity={0.85}
               onPress={handleSignUp}
               disabled={loading}
             >
               {loading
-                ? <ActivityIndicator color={colors['light-100']} />
-                : <Text style={s.primaryBtnText}>Create account</Text>
+                ? <ActivityIndicator color="#FFFFFF" />
+                : <Text className={s.primaryBtnText}>Sign up</Text>
               }
             </TouchableOpacity>
 
-            <View style={s.footerRow}>
-              <Text style={s.footerMuted}>Already have an account?</Text>
+            <View className={s.footerRow}>
+              <Text className={s.footerMuted}>Already have an account?</Text>
               <TouchableOpacity onPress={onSignInPress} activeOpacity={0.7}>
-                <Text style={s.footerLink}>Sign in</Text>
+                <Text className={s.footerLink}>Sign in</Text>
               </TouchableOpacity>
             </View>
 

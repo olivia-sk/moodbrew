@@ -1,166 +1,42 @@
-/**
- * styles/auth.ts
- * Shared styles for all auth screens: Welcome, SignIn, SignUp, Name.
- * Faithfully converts the Figma design tokens to React Native StyleSheet.
- */
-import { StyleSheet } from 'react-native';
-import { colors, spacing, fontSize, fonts } from '../theme';
+// shared style tokens for all auth screens: welcome, sign in, sign up, name.
 
-export const authStyles = StyleSheet.create({
+export const authStyles = {
+  // root
+  safe:    'flex-1 bg-light-100',
+  content: 'flex-1 px-[20px] pb-[48px]',
 
-  // ── Root ────────────────────────────────────────────────────────────────────
-  safe: {
-    flex:            1,
-    backgroundColor: colors['light-100'],
-  },
+  // top section - wordmark + doodle centred in the upper half
+  topSection: 'flex-1 justify-center items-center gap-xl',
 
-  /**
-   * Main content area.
-   * flex: 1 fills the safe area. paddingHorizontal matches the app's 20px grid.
-   * paddingBottom gives the bottom buttons breathing room above the home bar.
-   */
-  content: {
-    flex:              1,
-    paddingHorizontal: spacing['padding-horizontal'],  // 20px
-    paddingBottom:     spacing['3xl'],                 // 48px
-  },
+  // wordmark: instrument serif 42px olive
+  wordmark: 'font-serif text-display text-accent-olive text-center',
 
-  // ── Title section ───────────────────────────────────────────────────────────
-  /**
-   * flex: 1 pushes the bottom section (form / buttons) to the bottom of the
-   * screen. On Welcome and Sign In this centres the wordmark vertically in
-   * the top ~60% of the viewport, matching the Figma.
-   */
-  topSection: {
-    flex:           1,
-    justifyContent: 'center',
-    alignItems:     'center',
-  },
+  // "what should we call you?" - same font, left aligned
+  question: 'font-serif text-display text-accent-olive',
 
-  /** "Mood Brew" — Instrument Serif 42px, centered */
-  wordmark: {
-    fontFamily:    fonts.serif,
-    fontSize:      fontSize.display,   // 42px
-    color:         colors['brand-text-100'],
-    letterSpacing: -1.26,
-    textAlign:     'center',
-  },
+  // name screen layout
+  nameTop: 'pt-[64px] gap-xl',
 
-  /** "What should we call you?" — same font, left-aligned, wrapping */
-  question: {
-    fontFamily:    fonts.serif,
-    fontSize:      fontSize.display,   // 42px
-    color:         colors['brand-text-100'],
-    letterSpacing: -1.26,
-  },
+  // form
+  form:  'gap-[12px]',
+  input: 'bg-light-100 border border-brand-text-200 rounded-xs py-xl px-xl font-mono text-body-small text-brand-text-100',
 
-  // ── Name screen layout ──────────────────────────────────────────────────────
-  /**
-   * Groups the question + input together at the top of the content area,
-   * leaving the Continue button naturally at the bottom via space-between.
-   */
-  nameTop: {
-    paddingTop: spacing['4xl'],   // 64px from top — mirrors Figma y=271
-    gap:        spacing.xl,       // 24px between question and input
-  },
+  // forgot password link
+  forgotLink: 'font-mono text-body-small text-accent-olive uppercase underline',
 
-  // ── Form ────────────────────────────────────────────────────────────────────
-  /** Container for the stacked inputs + optional forgot-password row */
-  form: {
-    gap: spacing['stack-gap'],    // 12px between inputs
-  },
+  // bottom section wraps buttons + footer
+  bottomSection: 'gap-xl',
 
-  /**
-   * Input field — matches Figma:
-   * white bg · 1px #bdbdbd border · 4px radius · 24px padding all sides
-   * Font: FFF Acid Grotesk 14px
-   */
-  input: {
-    backgroundColor: colors['light-100'],
-    borderWidth:     1,
-    borderColor:     colors['brand-text-200'],
-    borderRadius:    spacing.xs,   // 4px
-    paddingVertical: spacing.xl,   // 24px
-    paddingHorizontal: spacing.xl,
-    fontFamily:      fonts.sans,
-    fontSize:        fontSize['body-small'],   // 14px
-    color:           colors['brand-text-100'],
-  },
+  // buttons
+  primaryBtn:    'bg-dark-100 rounded-xs py-xl items-center justify-center min-h-[64px]',
+  primaryBtnRow: 'bg-dark-100 rounded-xs py-xl flex-row items-center justify-center gap-sm min-h-[64px]',
+  primaryBtnText:'font-mono text-body-small text-light-100 uppercase',
 
-  /** "Forgot password" underlined text */
-  forgotLink: {
-    fontFamily:         fonts.sans,
-    fontSize:           fontSize['body-small'],
-    color:              colors['brand-text-100'],
-    textDecorationLine: 'underline',
-  },
+  outlineBtn:     'bg-light-100 border border-brand-text-200 rounded-xs py-xl items-center justify-center min-h-[64px]',
+  outlineBtnText: 'font-mono text-body-small text-brand-text-100 uppercase',
 
-  // ── Bottom section ───────────────────────────────────────────────────────────
-  /**
-   * Wraps form + primary button + footer.
-   * gap: xl (24px) between each block.
-   */
-  bottomSection: {
-    gap: spacing.xl,
-  },
-
-  // ── Buttons ─────────────────────────────────────────────────────────────────
-  /**
-   * Primary — dark fill (#121212), white text.
-   * Figma: border-radius 4px · padding-vertical 24px · full width.
-   */
-  primaryBtn: {
-    backgroundColor: colors['dark-100'],
-    borderRadius:    spacing.xs,
-    paddingVertical: spacing.xl,
-    alignItems:      'center',
-    justifyContent:  'center',
-    minHeight:       64,           // consistent tap target
-  },
-  primaryBtnText: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['light-100'],
-  },
-
-  /**
-   * Outline — white fill, #bdbdbd border.
-   * Used for "Continue with Email" on the Welcome screen.
-   */
-  outlineBtn: {
-    backgroundColor: colors['light-100'],
-    borderWidth:     1,
-    borderColor:     colors['brand-text-200'],
-    borderRadius:    spacing.xs,
-    paddingVertical: spacing.xl,
-    alignItems:      'center',
-    justifyContent:  'center',
-    minHeight:       64,
-  },
-  outlineBtnText: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['brand-text-100'],
-  },
-
-  // ── Footer ──────────────────────────────────────────────────────────────────
-  /** "New here?  Sign up" / "Already have an account?  Sign in" */
-  footerRow: {
-    flexDirection:  'row',
-    justifyContent: 'center',
-    alignItems:     'center',
-    flexWrap:       'wrap',
-    gap:            4,
-  },
-  footerMuted: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['light-500'],    // #5B5B5B
-  },
-  footerLink: {
-    fontFamily:         fonts.sans,
-    fontSize:           fontSize['body-small'],
-    color:              colors['brand-text-100'],
-    textDecorationLine: 'underline',
-  },
-});
+  // footer row
+  footerRow:  'flex-row justify-center items-center flex-wrap gap-[4px]',
+  footerMuted:'font-mono text-body-small text-brand-text-100 uppercase',
+  footerLink: 'font-mono text-body-small text-accent-olive uppercase underline',
+};

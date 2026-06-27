@@ -1,112 +1,46 @@
-import { StyleSheet } from 'react-native';
-import { colors, fontSize, fonts, spacing } from '../theme';
+// shared tailwind class strings used across multiple screens.
 
-/*
-  root-level styles across entire app
- */
+export const layout = {
+  // full-screen white safe area
+  safe: 'flex-1 bg-light-100',
 
-// ─── Layout ───────────────────────────────────────────────────────────────────
-export const layout = StyleSheet.create({
-  /** Full-screen white safe area root */
-  safe: {
-    flex:            1,
-    backgroundColor: colors['light-100'],
-  },
-  /** Standard scrollable page content */
-  scroll: {
-    paddingHorizontal: 16,
-    paddingBottom:     spacing['3xl'],
-    gap:               spacing['2xl'],
-  },
-  /** Row that fills width with space between two items */
-  rowBetween: {
-    flexDirection:  'row',
-    justifyContent: 'space-between',
-    alignItems:     'flex-start',
-  },
-});
+  // standard scrollable page content
+  scroll: 'px-[16px] pb-[48px] gap-[32px]',
 
-// ─── Typography ───────────────────────────────────────────────────────────────
-export const text = StyleSheet.create({
-  /** Display-size serif — wordmarks, hero labels */
-  display: {
-    fontFamily:    fonts.serif,
-    fontSize:      fontSize.display,
-    color:         colors['brand-text-100'],
-    letterSpacing: -0.5,
-    lineHeight:    fontSize.display * 1.1,
-  },
-  /** h1 serif — section titles (e.g. "My Tea Collection") */
-  h1: {
-    fontFamily:    fonts.serif,
-    fontSize:      fontSize.h1,
-    color:         colors['dark-100'],
-    letterSpacing: -0.96,
-    lineHeight:    fontSize.h1 * 1.25,  // extra room for serif ascenders
-  },
-  /** h2 serif — card titles */
-  h2: {
-    fontFamily:    fonts.serif,
-    fontSize:      fontSize.h2,
-    color:         colors['brand-text-100'],
-    letterSpacing: -0.78,
-    lineHeight:    fontSize.h2 * 1.15,
-  },
-  /** Standard body copy */
-  body: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize.body,
-    color:      colors['brand-text-100'],
-    lineHeight: fontSize.body * 1.5,
-  },
-  /** Small body copy */
-  bodySmall: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['light-500'],
-    lineHeight: fontSize['body-small'] * 1.6,
-  },
-  /** Mono uppercase eyebrow / label */
-  monoLabel: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize['mono-small'],
-    color:         colors['brand-text-200'],
-    textTransform: 'uppercase' as const,
-    letterSpacing: 1,
-  },
-  /** Mono base — dates, metadata, nav labels */
-  mono: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize.mono,
-    color:         colors['brand-text-100'],
-    letterSpacing: 0.3,
-    lineHeight:    fontSize.mono * 1.5,
-  },
-  /** Muted mono variant */
-  monoMuted: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize.mono,
-    color:         colors['brand-text-200'],
-    letterSpacing: 0.3,
-  },
-});
+  // row that fills width with space between two items
+  rowBetween: 'flex-row justify-between items-start',
+};
 
-// ─── Cards ────────────────────────────────────────────────────────────────────
-export const card = StyleSheet.create({
-  /** Standard bordered card */
-  base: {
-    backgroundColor: colors['light-200'],
-    borderWidth:     1,
-    borderColor:     colors['light-300'],
-    borderRadius:    spacing.xs,
-    padding:         spacing['card-padding'],
-  },
-  /** Card with white background */
-  white: {
-    backgroundColor: colors['light-100'],
-    borderWidth:     1,
-    borderColor:     colors['light-300'],
-    borderRadius:    16,
-    padding:         spacing['card-padding'],
-  },
-});
+export const text = {
+  // display-size serif for wordmarks and hero labels
+  display: 'font-serif text-display text-brand-text-100',
+
+  // h1 serif for section titles
+  h1: 'font-serif text-h1 text-accent-olive',
+
+  // h2 serif for card titles
+  h2: 'font-serif text-h2 text-brand-text-100',
+
+  // standard body copy
+  body: 'font-mono text-body text-brand-text-100',
+
+  // small body copy
+  bodySmall: 'font-mono text-body-small text-light-500',
+
+  // mono uppercase eyebrow / label
+  monoLabel: 'font-mono text-mono-small text-brand-text-200 uppercase tracking-[1px]',
+
+  // mono base for dates, metadata, nav labels
+  mono: 'font-mono text-mono text-brand-text-100',
+
+  // muted mono variant
+  monoMuted: 'font-mono text-mono text-brand-text-200',
+};
+
+export const card = {
+  // standard bordered card
+  base: 'bg-light-200 border border-light-300 rounded-xs p-[20px]',
+
+  // card with white background
+  white: 'bg-light-100 border border-light-300 rounded-xl p-[20px]',
+};

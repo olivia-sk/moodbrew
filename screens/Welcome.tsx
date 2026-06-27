@@ -1,25 +1,29 @@
 /**
  * screens/Welcome.tsx
- * Landing screen — Figma node 47:307 "sign up"
+ * landing screen - figma node 47:307 "sign up"
  *
- * Layout: "Mood Brew" wordmark centred in the top section,
+ * layout: "mood brew" wordmark + tea-tin doodle centred in the top section,
  * three auth buttons stacked at the bottom.
  *
- * Google / Apple OAuth stubs are UI-complete; wire them up via
+ * google / apple oauth stubs are ui-complete; wire them up via
  * supabase.auth.signInWithOAuth({ provider: 'google' | 'apple' })
- * once you have the OAuth apps configured in your Supabase dashboard.
+ * once you have the oauth apps configured in your supabase dashboard.
  */
 import React from 'react';
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
   Alert,
 } from 'react-native';
-import { colors } from '../theme';
 import { authStyles as s } from '../styles/auth';
+import MoodBrewDoodle from '../assets/images/mood-brew.svg';
+
+const googleIcon = require('../assets/images/google.png');
+const appleIcon  = require('../assets/images/apple.png');
 
 interface Props {
   onEmailPress: () => void;
@@ -30,40 +34,43 @@ export default function WelcomeScreen({ onEmailPress }: Props) {
     Alert.alert('Coming soon', 'Google and Apple sign-in will be available in a future update.');
 
   return (
-    <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
+    <SafeAreaView className={s.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <View style={s.content}>
+      <View className={s.content}>
 
-        {/* "Mood Brew" — centred vertically in the top section */}
-        <View style={s.topSection}>
-          <Text style={s.wordmark}>Mood Brew</Text>
+        {/* wordmark + doodle centred in the top section */}
+        <View className={s.topSection}>
+          <Text className={s.wordmark}>Mood Brew</Text>
+          <MoodBrewDoodle width={160} height={116} />
         </View>
 
-        {/* Auth options — bottom of screen */}
-        <View style={s.bottomSection}>
+        {/* auth options at the bottom */}
+        <View className={s.bottomSection}>
           <TouchableOpacity
-            style={s.primaryBtn}
+            className={s.primaryBtnRow}
             activeOpacity={0.85}
             onPress={handleOAuthSoon}
           >
-            <Text style={s.primaryBtnText}>Continue with Google</Text>
+            <Image source={googleIcon} style={{ width: 18, height: 18 }} resizeMode="contain" />
+            <Text className={s.primaryBtnText}>Continue with Google</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={s.primaryBtn}
+            className={s.primaryBtnRow}
             activeOpacity={0.85}
             onPress={handleOAuthSoon}
           >
-            <Text style={s.primaryBtnText}>Continue with Apple</Text>
+            <Image source={appleIcon} style={{ width: 16, height: 19 }} resizeMode="contain" />
+            <Text className={s.primaryBtnText}>Continue with Apple</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={s.outlineBtn}
+            className={s.outlineBtn}
             activeOpacity={0.85}
             onPress={onEmailPress}
           >
-            <Text style={s.outlineBtnText}>Continue with Email</Text>
+            <Text className={s.outlineBtnText}>Continue with Email</Text>
           </TouchableOpacity>
         </View>
 

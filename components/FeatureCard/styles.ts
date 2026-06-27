@@ -16,7 +16,7 @@ export const featureCardStyles = StyleSheet.create({
     left:          19,
     fontFamily:    fonts.serif,
     fontSize:      fontSize.h2,
-    color:         colors['brand-text-100'],
+    color:         colors['accent-olive'],
     lineHeight:    fontSize.h2 * 1.15,
     letterSpacing: -0.78,
     width:         96,

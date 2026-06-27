@@ -1,7 +1,8 @@
 /**
  * screens/Settings.tsx
- * Accessible from the gear icon on the Home screen.
- * Shows the logged-in user's info and a Sign out button.
+ * figma node 218:459 area / settings style
+ * accessible from the gear icon on the home screen.
+ * shows the logged-in user's info and a sign out button.
  */
 import React, { useState } from 'react';
 import {
@@ -14,7 +15,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { colors, spacing, fontSize, fonts } from '../theme';
+import { colors, fonts, fontSize, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
 interface Props {
@@ -34,7 +35,7 @@ export default function SettingsScreen({ onBack }: Props) {
         onPress: async () => {
           setSigningOut(true);
           await signOut();
-          // App.tsx's onAuthStateChange listener handles redirect to Welcome
+          // app.tsx's onAuthStateChange listener handles redirect to welcome
         },
       },
     ]);
@@ -44,42 +45,35 @@ export default function SettingsScreen({ onBack }: Props) {
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
 
-      {/* ── Header ── */}
+      {/* header row: back arrow left, "settings" centred, spacer right */}
       <View style={s.header}>
         <TouchableOpacity onPress={onBack} activeOpacity={0.7} style={s.backBtn}>
           <Text style={s.backArrow}>←</Text>
         </TouchableOpacity>
         <Text style={s.headerTitle}>SETTINGS</Text>
-        {/* Spacer to keep title centred */}
         <View style={s.backBtn} />
       </View>
 
       <View style={s.content}>
 
-        {/* ── Account info ── */}
+        {/* account info card */}
         <View style={s.section}>
           <Text style={s.sectionLabel}>ACCOUNT</Text>
 
-          <View style={s.card}>
+          <View style={s.infoCard}>
             <View style={s.row}>
               <Text style={s.rowLabel}>Name</Text>
-              <Text style={s.rowValue} numberOfLines={1}>
-                {userName || '—'}
-              </Text>
+              <Text style={s.rowValue} numberOfLines={1}>{userName || '\u2014'}</Text>
             </View>
-
             <View style={s.divider} />
-
             <View style={s.row}>
               <Text style={s.rowLabel}>Email</Text>
-              <Text style={s.rowValue} numberOfLines={1}>
-                {user?.email ?? '—'}
-              </Text>
+              <Text style={s.rowValue} numberOfLines={1}>{user?.email ?? '\u2014'}</Text>
             </View>
           </View>
         </View>
 
-        {/* ── Sign out ── */}
+        {/* sign out button */}
         <View style={s.section}>
           <TouchableOpacity
             style={s.signOutBtn}
@@ -101,100 +95,101 @@ export default function SettingsScreen({ onBack }: Props) {
 
 const s = StyleSheet.create({
   safe: {
-    flex:            1,
+    flex: 1,
     backgroundColor: colors['light-100'],
   },
 
-  // ── Header ────────────────────────────────────────────────────────────────
+  // header row: back / title / spacer
   header: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    justifyContent:    'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing['padding-horizontal'],
-    paddingTop:        spacing.lg,
-    paddingBottom:     spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors['light-300'],
   },
   backBtn: {
-    width:          40,
-    alignItems:     'flex-start',
+    width: 40,
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   backArrow: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-large'],
-    color:      colors['brand-text-100'],
+    fontFamily: fonts.mono,
+    fontSize: fontSize['body-large'],
+    color: colors['brand-text-100'],
   },
   headerTitle: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize.mono,
-    color:         colors['brand-text-100'],
+    fontFamily: fonts.mono,
+    fontSize: fontSize.mono,
+    color: colors['brand-text-100'],
     letterSpacing: 1,
   },
 
-  // ── Content ───────────────────────────────────────────────────────────────
+  // content area below header
   content: {
-    flex:              1,
+    flex: 1,
     paddingHorizontal: spacing['padding-horizontal'],
-    paddingTop:        spacing['2xl'],
-    gap:               spacing['2xl'],
+    paddingTop: spacing['2xl'],
+    gap: spacing['2xl'],
   },
 
-  // ── Section ───────────────────────────────────────────────────────────────
   section: {
     gap: spacing.sm,
   },
   sectionLabel: {
-    fontFamily:    fonts.mono,
-    fontSize:      fontSize['mono-small'],
-    color:         colors['brand-text-200'],
+    fontFamily: fonts.mono,
+    fontSize: fontSize['mono-small'],
+    color: colors['brand-text-200'],
     letterSpacing: 1,
   },
 
-  // ── Info card ─────────────────────────────────────────────────────────────
-  card: {
-    borderWidth:  1,
-    borderColor:  colors['light-300'],
+  // info card with bordered rows
+  infoCard: {
+    borderWidth: 1,
+    borderColor: colors['light-300'],
     borderRadius: spacing.xs,
-    overflow:     'hidden',
+    overflow: 'hidden',
   },
   row: {
-    flexDirection:     'row',
-    justifyContent:    'space-between',
-    alignItems:        'center',
-    paddingVertical:   spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.xl,
-    backgroundColor:   colors['light-100'],
+    backgroundColor: colors['light-100'],
   },
   rowLabel: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['brand-text-200'],
+    fontFamily: fonts.mono,
+    fontSize: fontSize['body-small'],
+    color: colors['brand-text-200'],
   },
   rowValue: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['brand-text-100'],
-    maxWidth:   '65%',
-    textAlign:  'right',
+    fontFamily: fonts.mono,
+    fontSize: fontSize['body-small'],
+    color: colors['brand-text-100'],
+    maxWidth: '65%',
+    textAlign: 'right',
   },
   divider: {
-    height:          1,
+    height: 1,
     backgroundColor: colors['light-300'],
   },
 
-  // ── Sign out button ───────────────────────────────────────────────────────
+  // sign out button
   signOutBtn: {
     backgroundColor: colors['dark-100'],
-    borderRadius:    spacing.xs,
-    paddingVertical: spacing.xl,
-    alignItems:      'center',
-    justifyContent:  'center',
+    borderRadius: spacing.xs,
+    height: 57,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   signOutText: {
-    fontFamily: fonts.sans,
-    fontSize:   fontSize['body-small'],
-    color:      colors['light-100'],
+    fontFamily: fonts.mono,
+    fontSize: fontSize['body-small'],
+    color: colors['light-100'],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });

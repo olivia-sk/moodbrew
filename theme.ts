@@ -13,6 +13,9 @@ export const colors = {
   // Brand text
   'brand-text-100': '#121212',
   'brand-text-200': '#BDBDBD',
+
+  // Accent — olive, used for the wordmark, illustration line art, and links
+  'accent-olive':   '#8A9900',
 } as const;
 
 // ─── Spacing ───────────────────────────────────────────────────────────────
@@ -48,12 +51,7 @@ export const fontSize = {
 // ─── Font families ─────────────────────────────────────────────────────────
 // Instrument Serif  → loaded via @expo-google-fonts/instrument-serif
 // IBM Plex Mono     → loaded via @expo-google-fonts/ibm-plex-mono
-// FFF Acid Grotesk  → local files in assets/fonts/ (add FFFAcidGrotesk-Normal.otf
-//                     and FFFAcidGrotesk-Medium.otf, then register in App.tsx)
 export const fonts = {
-  serif:      'InstrumentSerif_400Regular',
-  sans:       'FFFAcidGrotesk-Normal',
-  sansMedium: 'FFFAcidGrotesk-Medium',
-  sansBold:   'FFFAcidGrotesk-Bold',
-  mono:       'IBMPlexMono_400Regular',
+  serif: 'InstrumentSerif_400Regular',
+  mono:  'IBMPlexMono_400Regular',
 } as const;

@@ -1,9 +1,9 @@
 /**
  * screens/SignIn.tsx
- * Figma node 51:364 "sign in"
+ * figma node 51:364 "sign in"
  *
- * Existing users sign in with email + password.
- * "New here? Sign up" navigates to the SignUp flow.
+ * existing users sign in with email + password.
+ * "new here? sign up" navigates to the sign up flow.
  */
 import React, { useState } from 'react';
 import {
@@ -18,14 +18,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { colors } from '../theme';
 import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
+import MoodBrewDoodle from '../assets/images/mood-brew.svg';
 
 interface Props {
-  /** Called after a successful sign-in */
   onSuccess:     () => void;
-  /** Navigate to the sign-up flow */
   onSignUpPress: () => void;
 }
 
@@ -66,28 +64,29 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
   };
 
   return (
-    <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
+    <SafeAreaView className={s.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={s.content}>
+        <View className={s.content}>
 
-          {/* "Mood Brew" wordmark — centred in top half */}
-          <View style={s.topSection}>
-            <Text style={s.wordmark}>Mood Brew</Text>
+          {/* wordmark + doodle centred in top half */}
+          <View className={s.topSection}>
+            <Text className={s.wordmark}>Mood Brew</Text>
+            <MoodBrewDoodle width={160} height={116} />
           </View>
 
-          {/* Form + CTA — bottom of screen */}
-          <View style={s.bottomSection}>
+          {/* form + cta at the bottom */}
+          <View className={s.bottomSection}>
 
-            <View style={s.form}>
+            <View className={s.form}>
               <TextInput
-                style={s.input}
-                placeholder="Email"
-                placeholderTextColor={colors['brand-text-200']}
+                className={s.input}
+                placeholder="EMAIL"
+                placeholderTextColor="#BDBDBD"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -96,9 +95,9 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
                 returnKeyType="next"
               />
               <TextInput
-                style={s.input}
-                placeholder="Password"
-                placeholderTextColor={colors['brand-text-200']}
+                className={s.input}
+                placeholder="PASSWORD"
+                placeholderTextColor="#BDBDBD"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -106,26 +105,26 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
                 onSubmitEditing={handleSignIn}
               />
               <TouchableOpacity onPress={handleForgotPassword} activeOpacity={0.7}>
-                <Text style={s.forgotLink}>Forgot password</Text>
+                <Text className={s.forgotLink}>Forgot password</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              style={s.primaryBtn}
+              className={s.primaryBtn}
               activeOpacity={0.85}
               onPress={handleSignIn}
               disabled={loading}
             >
               {loading
-                ? <ActivityIndicator color={colors['light-100']} />
-                : <Text style={s.primaryBtnText}>Sign in</Text>
+                ? <ActivityIndicator color="#FFFFFF" />
+                : <Text className={s.primaryBtnText}>Sign in</Text>
               }
             </TouchableOpacity>
 
-            <View style={s.footerRow}>
-              <Text style={s.footerMuted}>New here?</Text>
+            <View className={s.footerRow}>
+              <Text className={s.footerMuted}>New here?</Text>
               <TouchableOpacity onPress={onSignUpPress} activeOpacity={0.7}>
-                <Text style={s.footerLink}>Sign up</Text>
+                <Text className={s.footerLink}>Sign up</Text>
               </TouchableOpacity>
             </View>
 

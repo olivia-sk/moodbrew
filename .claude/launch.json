@@ -4,9 +4,8 @@
     {
       "name": "expo-start",
       "runtimeExecutable": "bun",
-      "runtimeArgs": ["run", "start"],
-      "port": 8081,
-      "autoPort": true
+      "runtimeArgs": ["run", "start", "--", "--port", "8082"],
+      "port": 8082
     },
     {
       "name": "expo-web",
