@@ -2,11 +2,15 @@
 
 export const authStyles = {
   // root
-  safe:    'flex-1 bg-light-100',
-  content: 'flex-1 px-[20px] pb-[48px]',
+  safe: 'flex-1 bg-light-100',
 
-  // top section - wordmark + doodle centred in the upper half
-  topSection: 'flex-1 justify-center items-center gap-xl',
+  // content is anchored to the top with a fixed top padding, everything
+  // stacks from there with consistent gaps, any leftover space is simply
+  // left empty at the bottom rather than centred or pushed around
+  content: 'flex-1 px-[20px] pt-[64px] pb-[48px] gap-xl',
+
+  // top section: wordmark + doodle, horizontally centred, grouped together
+  topSection: 'items-center gap-xl',
 
   // wordmark: instrument serif 42px olive
   wordmark: 'font-serif text-display text-accent-olive text-center',
@@ -14,8 +18,9 @@ export const authStyles = {
   // "what should we call you?" - same font, left aligned
   question: 'font-serif text-display text-accent-olive',
 
-  // name screen layout
-  nameTop: 'pt-[64px] gap-xl',
+  // name screen layout: question, input, and continue button grouped
+  // together right under the top padding, same as the other auth screens
+  nameTop: 'gap-xl',
 
   // form
   form:  'gap-[12px]',
@@ -24,7 +29,7 @@ export const authStyles = {
   // forgot password link
   forgotLink: 'font-mono text-body-small text-accent-olive uppercase underline',
 
-  // bottom section wraps buttons + footer
+  // bottom section wraps the form + primary button
   bottomSection: 'gap-xl',
 
   // buttons

@@ -57,13 +57,8 @@ export default function NameScreen({ onSuccess }: Props) {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/*
-          justify-between separates the top group (question + input)
-          from the continue button, matching the figma vertical rhythm.
-        */}
-        <View className={`${s.content} justify-between`}>
+        <View className={s.content}>
 
-          {/* question + name field grouped at the top */}
           <View className={s.nameTop}>
             <Text className={s.question}>What should{'\n'}we call you?</Text>
             <TextInput
@@ -77,20 +72,18 @@ export default function NameScreen({ onSuccess }: Props) {
               returnKeyType="done"
               onSubmitEditing={handleContinue}
             />
+            <TouchableOpacity
+              className={s.primaryBtn}
+              activeOpacity={0.85}
+              onPress={handleContinue}
+              disabled={loading}
+            >
+              {loading
+                ? <ActivityIndicator color="#FFFFFF" />
+                : <Text className={s.primaryBtnText}>Continue</Text>
+              }
+            </TouchableOpacity>
           </View>
-
-          {/* continue button anchored to the bottom */}
-          <TouchableOpacity
-            className={s.primaryBtn}
-            activeOpacity={0.85}
-            onPress={handleContinue}
-            disabled={loading}
-          >
-            {loading
-              ? <ActivityIndicator color="#FFFFFF" />
-              : <Text className={s.primaryBtnText}>Continue</Text>
-            }
-          </TouchableOpacity>
 
         </View>
       </KeyboardAvoidingView>

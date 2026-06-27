@@ -21,11 +21,10 @@ import { supabase } from '../lib/supabase';
 import MoodBrewDoodle from '../assets/images/mood-brew.svg';
 
 interface Props {
-  onSuccess:     () => void;
-  onSignInPress: () => void;
+  onSuccess: () => void;
 }
 
-export default function SignUpScreen({ onSuccess, onSignInPress }: Props) {
+export default function SignUpScreen({ onSuccess }: Props) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -107,13 +106,6 @@ export default function SignUpScreen({ onSuccess, onSignInPress }: Props) {
                 : <Text className={s.primaryBtnText}>Sign up</Text>
               }
             </TouchableOpacity>
-
-            <View className={s.footerRow}>
-              <Text className={s.footerMuted}>Already have an account?</Text>
-              <TouchableOpacity onPress={onSignInPress} activeOpacity={0.7}>
-                <Text className={s.footerLink}>Sign in</Text>
-              </TouchableOpacity>
-            </View>
 
           </View>
         </View>

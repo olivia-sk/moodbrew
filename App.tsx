@@ -113,7 +113,6 @@ export default function App() {
         return (
           <SignUpScreen
             onSuccess={() => setScreen('name')}
-            onSignInPress={() => setScreen('signIn')}
           />
         );
 
