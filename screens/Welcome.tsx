@@ -1,6 +1,6 @@
 /**
  * screens/Welcome.tsx
- * landing screen, figma node 47:307 "sign up"
+ * landing screen, "sign up"
  *
  * layout: "mood brew" wordmark and tea tin doodle in the upper half,
  * three auth buttons grouped in the lower half.

@@ -1,7 +1,5 @@
 /**
- * screens/SignIn.tsx
- * figma node 51:364 "sign in"
- *
+ * screens/SignIn.tsx *
  * existing users sign in with email and password.
  * "new here? sign up" navigates to the sign up flow.
  */

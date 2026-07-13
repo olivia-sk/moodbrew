@@ -1,6 +1,6 @@
 /**
  * screens/Settings.tsx
- * figma node 218:459 area / settings style
+ * settings style
  * accessible from the gear icon on the home screen.
  * shows the logged-in user's info and a sign out button.
  */

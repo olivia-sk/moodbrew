@@ -24,6 +24,8 @@ import SignUpScreen    from './screens/SignUp';
 import NameScreen      from './screens/Name';
 import HomeScreen      from './screens/Home';
 import PantryScreen    from './screens/Pantry';
+import JournalScreen   from './screens/Journal';
+import DiscoveryScreen from './screens/Discovery';
 import MoodInputScreen from './screens/MoodInput';
 import MatchCardScreen from './screens/MatchCard';
 import KettleScreen    from './screens/Kettle';
@@ -32,19 +34,18 @@ import SettingsScreen  from './screens/Settings';
 
 SplashScreen.preventAutoHideAsync();
 
-// ─── Navigation state ─────────────────────────────────────────────────────────
+// navigation state
 type AppScreen =
-  | 'welcome' | 'signIn' | 'signUp' | 'name' | 'home' | 'pantry'
-  | 'moodInput' | 'matchCard' | 'kettle' | 'pairings' | 'settings';
+  | 'welcome' | 'signIn' | 'signUp' | 'name' | 'home' | 'pantry' | 'journal'
+  | 'moodInput' | 'matchCard' | 'kettle' | 'pairings' | 'settings' | 'discovery';
 
-// ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  // ── Fonts ──────────────────────────────────────────────────────────────────
+  // fonts
   const [serifLoaded] = useSerifFonts({ InstrumentSerif_400Regular });
   const [monoLoaded]  = useMonoFonts({ IBMPlexMono_400Regular });
   const fontsReady = serifLoaded && monoLoaded;
 
-  // ── Auth / screen state ────────────────────────────────────────────────────
+  // auth and screen state
   const [screen,       setScreen]       = useState<AppScreen>('welcome');
   const [authChecked,  setAuthChecked]  = useState(false);
 
@@ -96,7 +97,7 @@ export default function App() {
     setScreen('home');
   };
 
-  // ── Screen router ──────────────────────────────────────────────────────────
+  // screen router
   const renderScreen = () => {
     switch (screen) {
       case 'welcome':
@@ -133,7 +134,9 @@ export default function App() {
           <HomeScreen
             onSettingsPress={() => setScreen('settings')}
             onPantryPress={() => setScreen('pantry')}
+            onJournalPress={() => setScreen('journal')}
             onMoodInputPress={() => setScreen('moodInput')}
+            onDiscoveryPress={() => setScreen('discovery')}
             seedBrew={lastBrewTeaName}
           />
         );
@@ -142,6 +145,22 @@ export default function App() {
         return (
           <PantryScreen
             onHomePress={() => setScreen('home')}
+            onJournalPress={() => setScreen('journal')}
+          />
+        );
+
+      case 'journal':
+        return (
+          <JournalScreen
+            onHomePress={() => setScreen('home')}
+            onPantryPress={() => setScreen('pantry')}
+          />
+        );
+
+      case 'discovery':
+        return (
+          <DiscoveryScreen
+            onBack={() => setScreen('home')}
           />
         );
 

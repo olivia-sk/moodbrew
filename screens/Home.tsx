@@ -1,23 +1,22 @@
 /**
  * screens/Home.tsx
- * figma node 298:427 "home / shelf view"
+ * figma node 300:850 "home / recent teas"
  *
  * layout from figma (390x844):
- * status bar 0,0 390x59, date and greeting block at x=16 y=77,
- * settings icon top right, "my tea collection" title at y=160,
- * shelf image at y=208 sized 358x267 with 3 rows of 4 slots,
- * feature cards at y=507 h=200, nav hairline at y=753.
+ * status bar, date and greeting block top left with the settings icon
+ * top right, "recent teas" title, three flat shelf boards holding 12
+ * slots of recently brewed teas, then the discovery mode and brew by
+ * mood feature cards above the nav bar.
  *
- * the shelf doubles as a recent brews history feed: slot 0 shows the
- * most recent tasting log and older logs fill down the line. slots
- * with no log stay empty translucent placeholders.
+ * the shelf is a recent brews history feed with one slot per unique
+ * tea: slot 0 shows the most recently brewed tea and re brewing a tea
+ * bumps it back to slot 0 instead of taking a second slot. slots with
+ * no log stay empty grey placeholders.
  */
 import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Image,
-  ImageBackground,
   TouchableOpacity,
   StatusBar,
   StyleSheet,
@@ -30,20 +29,15 @@ import { fetchRecentBrews, RecentBrew, HOME_SHELF_SLOT_COUNT } from '../lib/rece
 import NavBar, { NavTab } from '../components/NavBar/NavBar';
 import FeatureCard from '../components/FeatureCard/FeatureCard';
 import SettingsIcon from '../components/SettingsIcon/SettingsIcon';
-import { SLOT_INSET, SLOT_ROW_TOPS } from '../styles/home';
+import ShelfRow, { ShelfSlotData } from '../components/ShelfRow/ShelfRow';
 
 // assets
-const shelfImg  = require('../assets/images/shelf.png');
-const paperImg  = require('../assets/images/paper-texture.jpg');
 const tinImg    = require('../assets/images/tin.png');
 const kettleImg = require('../assets/images/kettle.png');
 
-// slot indexes per visual row, slot 0 is the top left corner
-const SLOT_INDEXES_BY_ROW: number[][] = [
-  [0, 1, 2, 3],
-  [4, 5, 6, 7],
-  [8, 9, 10, 11],
-];
+// the recent teas shelf is 3 boards of 4 slots
+const SHELF_ROWS = 3;
+const SLOTS_PER_ROW = HOME_SHELF_SLOT_COUNT / SHELF_ROWS;
 
 function formatDate(d: Date): string {
   const day = d.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
@@ -61,7 +55,9 @@ function greeting(): string {
 interface Props {
   onSettingsPress:  () => void;
   onPantryPress:    () => void;
+  onJournalPress:   () => void;
   onMoodInputPress: () => void;
+  onDiscoveryPress: () => void;
   // tea name of a brew logged just before navigating here, shown
   // optimistically in slot 0 until the fetch resolves
   seedBrew?: string | null;
@@ -70,14 +66,16 @@ interface Props {
 export default function HomeScreen({
   onSettingsPress,
   onPantryPress,
+  onJournalPress,
   onMoodInputPress,
+  onDiscoveryPress,
   seedBrew,
 }: Props) {
   const [activeTab] = useState<NavTab>('home');
   const { user, userName } = useAuth();
   const today = new Date();
 
-  // chronological history feed, index 0 is the newest brew
+  // chronological feed of unique teas, index 0 is the newest brew
   const [recentBrews, setRecentBrews] = useState<RecentBrew[]>([]);
   const [brewsLoaded, setBrewsLoaded] = useState(false);
 
@@ -106,19 +104,22 @@ export default function HomeScreen({
 
   const handleTabPress = (tab: NavTab) => {
     if (tab === 'pantry') onPantryPress();
+    if (tab === 'journal') onJournalPress();
   };
 
+  const slotsForRow = (rowIndex: number): ShelfSlotData[] =>
+    Array.from({ length: SLOTS_PER_ROW }, (_, colIndex) => {
+      const slotIndex = rowIndex * SLOTS_PER_ROW + colIndex;
+      return {
+        key: `slot-${slotIndex}`,
+        label: shelfLabels[slotIndex] || undefined,
+      };
+    });
+
   return (
-    <View style={s.paper}>
-      {/* plain absolutely filled image instead of ImageBackground: on web,
-          ImageBackground measures its own size before laying out the
-          background image, and inside a flex chain that measurement can
-          settle on the image's natural pixel size instead of the screen,
-          stretching the whole page. absoluteFill is pure css and always
-          resolves against this view regardless of how it was sized */}
-      <Image source={paperImg} style={StyleSheet.absoluteFill} resizeMode="cover" />
+    <View style={s.root}>
       <SafeAreaView style={s.safe}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F9F9F9" />
+        <StatusBar barStyle="dark-content" backgroundColor={colors['light-200']} />
 
         <View style={s.page}>
 
@@ -138,51 +139,36 @@ export default function HomeScreen({
             </TouchableOpacity>
           </View>
 
-          {/* shelf section */}
+          {/* recent teas shelf */}
           <View style={s.shelfSection}>
-            <Text style={s.sectionTitle}>My Tea Collection</Text>
+            <Text style={s.sectionTitle}>Recent Teas</Text>
 
-            <ImageBackground
-              source={shelfImg}
-              style={s.shelfImage}
-              resizeMode="stretch"
-            >
-              {SLOT_ROW_TOPS.map((rowTop, rowIndex) => (
-                <View key={rowIndex} style={[s.slotRow, { top: rowTop, left: SLOT_INSET }]}>
-                  {SLOT_INDEXES_BY_ROW[rowIndex].map((slotIndex, colIndex) => (
-                    <React.Fragment key={slotIndex}>
-                      <View style={s.slot}>
-                        {slotIndex < shelfLabels.length && !!shelfLabels[slotIndex] && (
-                          <Text style={s.slotLabel} numberOfLines={2}>
-                            {shelfLabels[slotIndex]}
-                          </Text>
-                        )}
-                      </View>
-                      {colIndex < 3 && <View style={s.slotGap} />}
-                    </React.Fragment>
-                  ))}
-                </View>
+            <View style={s.shelfStack}>
+              {Array.from({ length: SHELF_ROWS }, (_, rowIndex) => (
+                <ShelfRow key={rowIndex} slots={slotsForRow(rowIndex)} />
               ))}
-            </ImageBackground>
+            </View>
           </View>
 
           {/* feature cards */}
+          <Text style={s.modeLabel}>Pick a mode</Text>
           <View style={s.featureRow}>
             <FeatureCard
-              title={'Discovery\nMode'}
+              title={'Discovery'}
               image={tinImg}
-              width="41%"
-              height={240}
+              width="41.34%"
+              height={200}
               accentColor={colors['brand-brown']}
               imageWidthPct="44%"
               imageHeightPct="47%"
               imageRight="16%"
+              onPress={onDiscoveryPress}
             />
             <FeatureCard
               title="Brew by Mood"
               image={kettleImg}
-              width="52.5%"
-              height={240}
+              width="52.79%"
+              height={200}
               accentColor={colors['accent-olive']}
               imageWidthPct="58%"
               imageHeightPct="45%"
@@ -200,10 +186,10 @@ export default function HomeScreen({
 }
 
 const s = StyleSheet.create({
-  // full bleed paper texture behind everything including the nav bar
-  paper: {
+  // warm paper grey behind everything including the nav bar
+  root: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors['light-200'],
   },
   safe: {
     flex: 1,
@@ -215,12 +201,12 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
   },
 
-  // top row: greeting left, settings right
+  // top row: greeting left, settings right, date lands at y77 in figma
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingTop: spacing.lg,
+    paddingTop: 18,
   },
   greetingBlock: {
     gap: 4,
@@ -240,10 +226,11 @@ const s = StyleSheet.create({
     padding: spacing.xs,
   },
 
-  // shelf section, a touch of air between the title and the shelf
+  // shelf section, measured off the figma frame: title at y160 and the
+  // first slot row at y239
   shelfSection: {
-    marginTop: spacing.xl,
-    gap: 18,
+    marginTop: spacing['2xl'],
+    gap: 48,
   },
   sectionTitle: {
     fontFamily: fonts.serif,
@@ -252,45 +239,29 @@ const s = StyleSheet.create({
     letterSpacing: -0.5,
   },
 
-  // shelf image: full width, figma ratio 358:267
-  shelfImage: {
-    width: '100%',
-    aspectRatio: 358 / 267,
+  // vertical rhythm between the three shelf boards from the figma frame,
+  // board tops sit 78 apart so the air between rows is 29
+  shelfStack: {
+    gap: 29,
   },
 
-  // slot rows absolutely positioned inside the shelf image
-  slotRow: {
-    position: 'absolute',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  // each slot is 50x40 with 24px gaps, matching the figma geometry
-  slot: {
-    width: 50,
-    height: 40,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  slotGap: {
-    width: 24,
-  },
-  slotLabel: {
-    fontFamily: fonts.mono,
-    fontSize: 8,
-    color: colors['brand-text-100'],
-    textAlign: 'center',
-    paddingHorizontal: 2,
+  // heading above the two mode cards, same voice as the recent teas
+  // title, with a clear pocket of air between it and the shelf above
+  modeLabel: {
+    fontFamily: fonts.serif,
+    fontSize: fontSize.h1,
+    color: colors['accent-olive'],
+    letterSpacing: -0.5,
+    marginTop: 44,
   },
 
-  // feature cards row, fixed card height keeps the cards squarish and
-  // vertical centering splits the leftover space evenly above and below
+  // feature cards row, the cards keep their y508 start from the frame
+  // with the heading sitting in the air above them
   featureRow: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.lg,
+    alignItems: 'flex-start',
+    marginTop: 12,
   },
 });

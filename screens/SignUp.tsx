@@ -1,6 +1,6 @@
 /**
  * screens/SignUp.tsx
- * email and password sign up, figma node 182:333.
+ * email and password sign up
  * after sign up the user proceeds to the name screen to set their display name.
  */
 import React, { useState } from 'react';

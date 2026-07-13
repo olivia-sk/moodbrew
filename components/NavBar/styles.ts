@@ -6,7 +6,7 @@ export const navStyles = StyleSheet.create({
     flexDirection:   'row',
     alignItems:      'center',
     paddingVertical: spacing.md,
-    // transparent so the paper texture behind the screen shows through
+    // transparent so the screen background behind it shows through
     backgroundColor: 'transparent',
     borderTopWidth:  1,
     borderTopColor:  colors['dark-100-o20'],
