@@ -34,6 +34,12 @@ yarn-error.*
 .env
 .env*.local
 
+# claude code project settings
+.claude/
+
+# claude code / agent skill files
+**/SKILL.md
+
 # supabase cli local cache
 supabase/.temp/
 
