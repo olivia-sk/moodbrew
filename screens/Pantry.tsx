@@ -2,33 +2,23 @@
  * screens/Pantry.tsx
  * figma node 233:327 "home / pantry view"
  *
- * layout from figma (390x844 frame):
- * - status bar: 0,0 w=390 h=61
- * - nav: y=753 h=61
- * - frame1: x=16 y=77 w=358 h=630
- *   - header frame (frame51): y=0 h=48
- *     - "my pantry" title: h=23
- *     - "collection of teas" subtitle: y=39 h=9
- *   - shelf group (group50): y=80 w=358 h=550
- *     - shelf image fills 358x550
- *     - 4 shelf rows of 4 slots:
- *       - row1 (frame2): x=43 y=176 w=272 h=40  (relative to group50)
- *       - row2 (frame2): x=43 y=312 w=272 h=40
- *       - row3 (frame2): x=43 y=434 w=272 h=40
- *       - row4 (frame2): x=43 y=562 w=272 h=40
- *       slots: w=50 h=40, gaps at x=74,148,222 so gap=24px
+ * layout from the figma frame measured at 390x844:
+ * paper texture background, header at y=77 with title and subtitle,
+ * wood shelf area rendered 358x550 starting at y=157, and 4 rows of
+ * 4 slots sitting flush on the shelf boards. slot geometry lives in
+ * styles/pantry.ts and scales with the device width.
  */
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
   View,
   Text,
+  Image,
   ImageBackground,
-  SafeAreaView,
   StatusBar,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import NavBar, { NavTab } from '../components/NavBar/NavBar';
 import TeaPickerSheet from '../components/TeaPickerSheet/TeaPickerSheet';
@@ -41,9 +31,19 @@ import {
   removeTeaFromSlot,
 } from '../lib/pantrySlots';
 import { Tea } from '../lib/types';
-import { SHELF_HEIGHT, SHELF_WIDTH, SLOT_INSET, SLOT_ROW_TOPS } from '../styles/pantry';
+import PressableScale from '../components/PressableScale/PressableScale';
+import {
+  SHELF_HEIGHT,
+  SHELF_WIDTH,
+  SLOT_GAP,
+  SLOT_H,
+  SLOT_INSET,
+  SLOT_ROW_TOPS,
+  SLOT_W,
+} from '../styles/pantry';
 
 const pantryShelfImg = require('../assets/images/pantry-shelf.png');
+const paperImg = require('../assets/images/paper-texture.jpg');
 
 const SLOT_INDEXES_BY_ROW: number[][] = [
   [0, 1, 2, 3],
@@ -144,10 +144,15 @@ export default function PantryScreen({ onHomePress }: Props) {
   };
 
   return (
+    <View style={s.paper}>
+      {/* plain absolutely filled image instead of ImageBackground: see
+          the same note in screens/Home.tsx for why this avoids the web
+          layout bug where the texture stretches the whole page */}
+      <Image source={paperImg} style={StyleSheet.absoluteFill} resizeMode="cover" />
     <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors['light-100']} />
+      <StatusBar barStyle="dark-content" backgroundColor="#F9F9F9" />
 
-      {/* main content frame: x=16 y=77 w=358 */}
+      {/* main content frame with 16px side padding */}
       <View style={s.frame}>
 
         {/* header: "my pantry" + "collection of teas" */}
@@ -171,17 +176,15 @@ export default function PantryScreen({ onHomePress }: Props) {
                     const tea = slots[slotIndex];
                     return (
                       <React.Fragment key={slotIndex}>
-                        <TouchableOpacity
-                          style={s.slot}
-                          activeOpacity={0.7}
-                          onPress={() => handleSlotPress(slotIndex)}
-                        >
-                          {tea && (
-                            <Text style={s.slotLabel} numberOfLines={2}>
-                              {tea.Name}
-                            </Text>
-                          )}
-                        </TouchableOpacity>
+                        <PressableScale onPress={() => handleSlotPress(slotIndex)}>
+                          <View style={s.slot}>
+                            {tea && (
+                              <Text style={s.slotLabel} numberOfLines={2}>
+                                {tea.Name}
+                              </Text>
+                            )}
+                          </View>
+                        </PressableScale>
                         {colIndex < rowSlotIndexes.length - 1 && <View style={s.slotGap} />}
                       </React.Fragment>
                     );
@@ -203,26 +206,31 @@ export default function PantryScreen({ onHomePress }: Props) {
         onClose={() => { setPickerVisible(false); setSelectedSlotIndex(null); }}
       />
     </SafeAreaView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
+  // full bleed paper texture behind everything including the nav bar
+  paper: {
+    flex: 1,
+    backgroundColor: '#F9F9F9',
+  },
   safe: {
     flex: 1,
-    backgroundColor: colors['light-100'],
   },
 
-  // content frame matches figma: x=16 padding, flex column
+  // content frame matches figma: 16px side padding, flex column
   frame: {
     flex: 1,
-    paddingHorizontal: spacing['padding-horizontal'],
+    paddingHorizontal: 16,
     paddingTop: spacing.lg,
   },
 
-  // header block: title + subtitle
+  // header block: title + subtitle, 32px gap down to the shelf
   header: {
     gap: spacing.xs,
-    marginBottom: spacing.lg,
+    marginBottom: spacing['2xl'],
   },
   title: {
     fontFamily: fonts.serif,
@@ -258,17 +266,18 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  // each slot: w=50 h=40 per figma
+  // slot geometry scales from the figma reference so the placeholders
+  // land flush on the shelf boards at any screen width
   slot: {
-    width: 50,
-    height: 40,
+    width: SLOT_W,
+    height: SLOT_H,
     backgroundColor: 'rgba(255,255,255,0.18)',
     borderRadius: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
   slotGap: {
-    width: 24,
+    width: SLOT_GAP,
   },
   slotLabel: {
     fontFamily: fonts.mono,

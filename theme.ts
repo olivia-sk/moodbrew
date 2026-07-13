@@ -1,6 +1,6 @@
-// ─── Colors ────────────────────────────────────────────────────────────────
+// ─── colors ────────────────────────────────────────────────────────────────
 export const colors = {
-  // Neutrals
+  // neutrals
   'light-100':      '#FFFFFF',
   'light-100-o20':  'rgba(255, 255, 255, 0.20)',
   'light-200':      '#F7F7F7',
@@ -10,15 +10,18 @@ export const colors = {
   'dark-100':       '#121212',
   'dark-100-o20':   'rgba(18, 18, 18, 0.20)',
 
-  // Brand text
+  // brand text
   'brand-text-100': '#121212',
   'brand-text-200': '#BDBDBD',
 
-  // Accent — olive, used for the wordmark, illustration line art, and links
+  // olive accent used for the wordmark, illustration line art, and links
   'accent-olive':   '#8A9900',
+
+  // warm brown accent used for the discovery card border and title
+  'brand-brown':    '#312310',
 } as const;
 
-// ─── Spacing ───────────────────────────────────────────────────────────────
+// ─── spacing ───────────────────────────────────────────────────────────────
 export const spacing = {
   xs:                 4,
   sm:                 8,
@@ -34,7 +37,7 @@ export const spacing = {
   'padding-vertical': 32,
 } as const;
 
-// ─── Font sizes ────────────────────────────────────────────────────────────
+// ─── font sizes ────────────────────────────────────────────────────────────
 export const fontSize = {
   display:      42,
   h1:           32,
@@ -48,7 +51,7 @@ export const fontSize = {
   'mono-small': 11,
 } as const;
 
-// ─── Font families ─────────────────────────────────────────────────────────
+// ─── font families ─────────────────────────────────────────────────────────
 // Instrument Serif  → loaded via @expo-google-fonts/instrument-serif
 // IBM Plex Mono     → loaded via @expo-google-fonts/ibm-plex-mono
 export const fonts = {

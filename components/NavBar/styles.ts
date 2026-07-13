@@ -6,7 +6,8 @@ export const navStyles = StyleSheet.create({
     flexDirection:   'row',
     alignItems:      'center',
     paddingVertical: spacing.md,
-    backgroundColor: colors['light-100'],
+    // transparent so the paper texture behind the screen shows through
+    backgroundColor: 'transparent',
     borderTopWidth:  1,
     borderTopColor:  colors['dark-100-o20'],
   },
@@ -18,7 +19,7 @@ export const navStyles = StyleSheet.create({
   },
   label: {
     fontFamily:    fonts.mono,
-    fontSize:      fontSize.mono,
-    letterSpacing: 0.5,
+    fontSize:      fontSize['mono-small'],
+    letterSpacing: 1,
   },
 });

@@ -18,13 +18,13 @@
 // - "skip to pairings" button: y=680 h=57
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import CardStack, { cardNumberFor } from '../components/CardStack/CardStack';
 import { formatCountdown, parseBrewSeconds } from '../lib/brewTimer';

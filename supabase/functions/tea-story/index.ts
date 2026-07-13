@@ -6,9 +6,20 @@
 // deploy with: supabase functions deploy tea-story
 // requires the secret: supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 import { corsHeaders } from '../_shared/cors.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
+
+// supabase injects these into every edge function automatically, no
+// secret needs to be set for them
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+// caps how many tea stories a single user can generate in a rolling 24
+// hours, so a compromised or scripted client can't run up the anthropic bill
+const DAILY_CALL_LIMIT = 20;
+const FUNCTION_NAME = 'tea-story';
 
 interface TeaStoryRequestBody {
   teaName: string;
@@ -90,6 +101,23 @@ function isTeaStoryPayload(value: unknown): value is TeaStoryPayload {
   );
 }
 
+// reads the caller's user id straight out of the jwt payload. this function
+// requires a verified jwt (verify_jwt is on), so the edge runtime already
+// checked the token's signature and expiry before invoking this handler,
+// this is just decoding already trusted data rather than re authenticating
+function getUserIdFromRequest(req: Request): string | null {
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const segments = token.split('.');
+  if (segments.length !== 3) return null;
+  try {
+    const payload = JSON.parse(atob(segments[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.sub === 'string' ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -99,6 +127,38 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: 'ANTHROPIC_API_KEY is not configured' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const userId = getUserIdFromRequest(req);
+  if (!userId) {
+    return new Response(
+      JSON.stringify({ error: 'could not identify the signed in user' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  // service role bypasses row level security, which is intentional here,
+  // this table has no client facing policies at all, only this function
+  // is meant to read or write it
+  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count, error: countError } = await supabaseAdmin
+    .from('ai_call_log')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('function_name', FUNCTION_NAME)
+    .gte('created_at', since);
+
+  if (countError) {
+    // the rate limit check itself failing should not take down the
+    // feature, log it and fail open rather than blocking every request
+    console.error('tea-story rate limit check failed:', countError);
+  } else if ((count ?? 0) >= DAILY_CALL_LIMIT) {
+    return new Response(
+      JSON.stringify({ error: 'daily limit reached for tea stories, try again tomorrow' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 
@@ -132,12 +192,24 @@ Deno.serve(async (req) => {
       throw new Error('haiku response did not match the expected schema');
     }
 
+    // only a successful generation counts against the daily limit, a
+    // failed attempt should not cost the user one of their tries
+    const { error: logError } = await supabaseAdmin
+      .from('ai_call_log')
+      .insert({ user_id: userId, function_name: FUNCTION_NAME });
+    if (logError) {
+      console.error('tea-story call logging failed:', logError);
+    }
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    // the real detail (which can include raw anthropic response bodies)
+    // stays in the function logs, only a generic message reaches the client
+    console.error('tea-story failed:', error);
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: 'could not generate the tea story right now' }),
       { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

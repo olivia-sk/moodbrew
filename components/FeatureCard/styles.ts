@@ -1,27 +1,28 @@
 import { StyleSheet } from 'react-native';
-import { colors, spacing, fontSize, fonts } from '../../theme';
+import { colors, fonts, fontSize } from '../../theme';
 
 export const featureCardStyles = StyleSheet.create({
+  // white card with a 1px accent border, radius 4 per the design system
   card: {
-    backgroundColor: colors['light-200'],
+    flex:            1,
+    backgroundColor: colors['light-100'],
     borderWidth:     1,
-    borderColor:     colors['light-400'],
-    borderRadius:    spacing.xs,
+    borderRadius:    4,
     overflow:        'hidden',
   },
-  // Matches Figma exactly: left 19px, top 31px, width 96px
+  // mono uppercase title anchored to the top left of the card
   title: {
     position:      'absolute',
-    top:           31,
-    left:          19,
-    fontFamily:    fonts.serif,
-    fontSize:      fontSize.h2,
-    color:         colors['accent-olive'],
-    lineHeight:    fontSize.h2 * 1.15,
-    letterSpacing: -0.78,
-    width:         96,
+    top:           24,
+    left:          20,
+    fontFamily:    fonts.mono,
+    fontSize:      fontSize['body-small'],
+    lineHeight:    21,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    width:         140,
   },
-  // right and width are injected per-card via inline style
+  // right and width are injected per card via inline style
   image: {
     position: 'absolute',
     bottom:   20,

@@ -94,8 +94,11 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    // the real detail (which can include raw upstream response bodies)
+    // stays in the function logs, only a generic message reaches the client
+    console.error('spotify-track failed:', error);
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: 'could not look up that track right now' }),
       { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

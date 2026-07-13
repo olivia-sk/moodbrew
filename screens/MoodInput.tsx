@@ -18,13 +18,13 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import GradientSlider from '../components/GradientSlider/GradientSlider';
 import { findBestTeaMatchFromPantry } from '../lib/teaMatching';

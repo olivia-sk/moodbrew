@@ -1,6 +1,7 @@
 import './global.css';
 import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   InstrumentSerif_400Regular,
@@ -52,8 +53,12 @@ export default function App() {
   const [moodContext,  setMoodContext]  = useState<MoodContext | null>(null);
   const [teaStory,     setTeaStory]     = useState<TeaStoryResult | null>(null);
 
+  // tea name of the brew logged on the pairings screen just before coming
+  // home, shown optimistically in shelf slot 0 while the feed refetches
+  const [lastBrewTeaName, setLastBrewTeaName] = useState<string | null>(null);
+
   useEffect(() => {
-    // On mount: restore persisted session and decide the initial screen
+    // on mount: restore persisted session and decide the initial screen
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         const hasName = !!session.user?.user_metadata?.name;
@@ -64,7 +69,7 @@ export default function App() {
       setAuthChecked(true);
     });
 
-    // Sign out when the session is invalidated externally
+    // sign out when the session is invalidated externally
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) setScreen('welcome');
@@ -74,7 +79,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Hide splash once fonts + auth check are both ready
+  // hide splash once fonts + auth check are both ready
   useEffect(() => {
     if (fontsReady && authChecked) SplashScreen.hideAsync();
   }, [fontsReady, authChecked]);
@@ -129,6 +134,7 @@ export default function App() {
             onSettingsPress={() => setScreen('settings')}
             onPantryPress={() => setScreen('pantry')}
             onMoodInputPress={() => setScreen('moodInput')}
+            seedBrew={lastBrewTeaName}
           />
         );
 
@@ -196,7 +202,12 @@ export default function App() {
             tea={matchedTea!}
             story={teaStory!}
             onBack={() => setScreen('kettle')}
-            onDone={goHomeAndResetFlow}
+            onDone={() => {
+              // remember the brew that was just logged so the home shelf
+              // can show it in slot 0 before the feed query resolves
+              setLastBrewTeaName(matchedTea!.Name);
+              goHomeAndResetFlow();
+            }}
           />
         );
 
@@ -209,12 +220,33 @@ export default function App() {
     }
   };
 
-  // AuthProvider wraps everything so useAuth() works in HomeScreen
-  // ToastHost sits on top of whatever screen is active
-  return (
-    <AuthProvider>
-      {renderScreen()}
-      <ToastHost />
-    </AuthProvider>
+  // SafeAreaProvider feeds real device insets to every screen so content
+  // clears the status bar and the ios home indicator on all platforms.
+  // authprovider wraps everything so useAuth() works in HomeScreen.
+  // toasthost sits on top of whatever screen is active.
+  const app = (
+    <SafeAreaProvider>
+      <AuthProvider>
+        {renderScreen()}
+        <ToastHost />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
+
+  // every layout in this app is built for a phone sized screen. on native
+  // that is automatically what the app gets, but a browser tab can be any
+  // width, so on web the app is pinned inside a phone sized frame instead
+  // of stretching edge to edge and looking like a completely different
+  // design at wide widths
+  if (Platform.OS === 'web') {
+    return (
+      <View style={{ flex: 1, minHeight: 0, alignItems: 'center', backgroundColor: '#E5E5E5' }}>
+        <View style={{ width: 430, maxWidth: '100%', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {app}
+        </View>
+      </View>
+    );
+  }
+
+  return app;
 }

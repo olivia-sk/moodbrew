@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* rn web leaves html/body/#root at their content height by default, which
+   collapses the app's flex:1 tree to a few hundred pixels instead of
+   filling the browser window. pinning these to 100% lets the phone sized
+   frame in App.tsx actually stretch full height on web. */
+html, body, #root {
+  height: 100%;
+}

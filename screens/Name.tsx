@@ -11,16 +11,17 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
+import FadeIn from '../components/FadeIn/FadeIn';
+import PressableScale from '../components/PressableScale/PressableScale';
 
 interface Props {
   onSuccess: () => void;
@@ -50,19 +51,22 @@ export default function NameScreen({ onSuccess }: Props) {
   };
 
   return (
-    <SafeAreaView className={s.safe}>
+    <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View className={s.content}>
+        <View className={s.nameContent}>
 
-          <View className={s.nameTop}>
-            <Text className={s.question}>What should{'\n'}we call you?</Text>
+          <FadeIn>
+            <Text className={s.question}>What should we call you?</Text>
+          </FadeIn>
+
+          <FadeIn delay={80}>
             <TextInput
-              className={s.input}
+              className={`${s.input} ${s.inputCentered} ${s.nameInputGap}`}
               placeholder="NAME"
               placeholderTextColor="#BDBDBD"
               value={name}
@@ -72,18 +76,17 @@ export default function NameScreen({ onSuccess }: Props) {
               returnKeyType="done"
               onSubmitEditing={handleContinue}
             />
-            <TouchableOpacity
-              className={s.primaryBtn}
-              activeOpacity={0.85}
-              onPress={handleContinue}
-              disabled={loading}
-            >
-              {loading
-                ? <ActivityIndicator color="#FFFFFF" />
-                : <Text className={s.primaryBtnText}>Continue</Text>
-              }
-            </TouchableOpacity>
-          </View>
+            <View className={s.btnGap}>
+              <PressableScale onPress={handleContinue} disabled={loading}>
+                <View className={s.primaryBtn}>
+                  {loading
+                    ? <ActivityIndicator color="#FFFFFF" />
+                    : <Text className={s.primaryBtnText}>Continue</Text>
+                  }
+                </View>
+              </PressableScale>
+            </View>
+          </FadeIn>
 
         </View>
       </KeyboardAvoidingView>

@@ -2,24 +2,28 @@ import React from 'react';
 import {
   Text,
   Image,
-  TouchableOpacity,
+  View,
   ImageSourcePropType,
   DimensionValue,
 } from 'react-native';
+import PressableScale from '../PressableScale/PressableScale';
 import { featureCardStyles as s } from './styles';
 
 interface FeatureCardProps {
   title: string;
   image: ImageSourcePropType;
-  /** Card width — pass a number (px) or percentage string e.g. '48%' */
+  /** card width, pass a number in px or a percentage string like '48%' */
   width: DimensionValue;
-  /** Fixed card height in px — omit to let the card stretch to parent height */
+  /** fixed card height in px, omit to let the card stretch to parent height */
   height?: number;
-  /** Illustration width as % of card (scales naturally with card) */
+  /** border and title color, one accent per card in the design */
+  accentColor: string;
+  /** illustration width as a percentage of the card */
   imageWidthPct: DimensionValue;
-  /** Illustration w/h ratio */
-  imageAspectRatio: number;
-  /** Illustration right offset from card edge (default '8%') */
+  /** illustration height as a percentage of the card, the image letterboxes
+      inside this box via contain so it never distorts */
+  imageHeightPct: DimensionValue;
+  /** illustration right offset from the card edge, defaults to '8%' */
   imageRight?: DimensionValue;
   onPress?: () => void;
 }
@@ -29,23 +33,26 @@ export default function FeatureCard({
   image,
   width,
   height,
+  accentColor,
   imageWidthPct,
-  imageAspectRatio,
+  imageHeightPct,
   imageRight = '8%',
   onPress,
 }: FeatureCardProps) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
+    <PressableScale
       onPress={onPress}
-      style={[s.card, { width }, height !== undefined ? { height } : undefined]}
+      containerStyle={[{ width }, height !== undefined ? { height } : undefined]}
+      style={{ flex: 1 }}
     >
-      <Text style={s.title}>{title}</Text>
-      <Image
-        source={image}
-        style={[s.image, { width: imageWidthPct, aspectRatio: imageAspectRatio, right: imageRight }]}
-        resizeMode="contain"
-      />
-    </TouchableOpacity>
+      <View style={[s.card, { borderColor: accentColor }]}>
+        <Text style={[s.title, { color: accentColor }]}>{title}</Text>
+        <Image
+          source={image}
+          style={[s.image, { width: imageWidthPct, height: imageHeightPct, right: imageRight }]}
+          resizeMode="contain"
+        />
+      </View>
+    </PressableScale>
   );
 }

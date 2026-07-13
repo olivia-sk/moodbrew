@@ -48,13 +48,16 @@ create policy "users can delete from their own pantry"
   using (auth.uid() = user_id);
 
 -- keeps updated_at current whenever in_stock or anything else changes
+-- search_path is pinned empty so this can't be tricked by a same named
+-- object planted earlier in a caller's search path
 create or replace function public.set_user_pantry_updated_at()
 returns trigger as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+set search_path = '';
 
 drop trigger if exists user_pantry_set_updated_at on public.user_pantry;
 

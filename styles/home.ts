@@ -7,14 +7,16 @@ const SHELF_H = 267;
 
 // vertical top position (as % of shelf height) for each of the 3 slot rows.
 // exported so home.tsx can iterate them inside the ImageBackground.
+// nudged down 6 and right 13 from the figma values so the placeholders sit
+// flush on the boards of the higher resolution shelf photo
 export const SLOT_ROW_TOPS: DimensionValue[] = [
-  `${(51  / SHELF_H * 100).toFixed(2)}%` as DimensionValue,  // 19.10%
-  `${(130 / SHELF_H * 100).toFixed(2)}%` as DimensionValue,  // 48.69%
-  `${(206 / SHELF_H * 100).toFixed(2)}%` as DimensionValue,  // 77.15%
+  `${(57  / SHELF_H * 100).toFixed(2)}%` as DimensionValue,  // 21.35%
+  `${(136 / SHELF_H * 100).toFixed(2)}%` as DimensionValue,  // 50.94%
+  `${(212 / SHELF_H * 100).toFixed(2)}%` as DimensionValue,  // 79.40%
 ];
 
-// left/right inset for slot rows (12.01% of shelf width, symmetric)
-export const SLOT_INSET: DimensionValue = `${(43 / SHELF_W * 100).toFixed(2)}%` as DimensionValue;
+// left inset for slot rows
+export const SLOT_INSET: DimensionValue = `${(56 / SHELF_W * 100).toFixed(2)}%` as DimensionValue;
 
 export const homeStyles = {
   // root content wrapper with horizontal padding and gap between sections

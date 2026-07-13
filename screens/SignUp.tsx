@@ -1,23 +1,24 @@
 /**
  * screens/SignUp.tsx
- * email + password sign-up - figma node 182:333.
- * after sign-up the user proceeds to the name screen to set their display name.
+ * email and password sign up, figma node 182:333.
+ * after sign up the user proceeds to the name screen to set their display name.
  */
 import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
+import FadeIn from '../components/FadeIn/FadeIn';
+import PressableScale from '../components/PressableScale/PressableScale';
 import MoodBrewDoodle from '../assets/images/mood-brew.svg';
 
 interface Props {
@@ -53,7 +54,7 @@ export default function SignUpScreen({ onSuccess }: Props) {
   };
 
   return (
-    <SafeAreaView className={s.safe}>
+    <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
@@ -62,15 +63,18 @@ export default function SignUpScreen({ onSuccess }: Props) {
       >
         <View className={s.content}>
 
-          {/* wordmark + doodle */}
-          <View className={s.topSection}>
-            <Text className={s.wordmark}>Mood Brew</Text>
-            <MoodBrewDoodle width={160} height={116} />
-          </View>
+          {/* wordmark and doodle */}
+          <FadeIn>
+            <View className={s.topSection}>
+              <Text className={s.wordmark}>Mood Brew</Text>
+              <View className={s.doodleWrap}>
+                <MoodBrewDoodle width={160} height={116} />
+              </View>
+            </View>
+          </FadeIn>
 
           {/* form */}
-          <View className={s.bottomSection}>
-
+          <FadeIn delay={80}>
             <View className={s.form}>
               <TextInput
                 className={s.input}
@@ -95,19 +99,18 @@ export default function SignUpScreen({ onSuccess }: Props) {
               />
             </View>
 
-            <TouchableOpacity
-              className={s.primaryBtn}
-              activeOpacity={0.85}
-              onPress={handleSignUp}
-              disabled={loading}
-            >
-              {loading
-                ? <ActivityIndicator color="#FFFFFF" />
-                : <Text className={s.primaryBtnText}>Sign up</Text>
-              }
-            </TouchableOpacity>
+            <View className={s.btnGap}>
+              <PressableScale onPress={handleSignUp} disabled={loading}>
+                <View className={s.primaryBtn}>
+                  {loading
+                    ? <ActivityIndicator color="#FFFFFF" />
+                    : <Text className={s.primaryBtnText}>Sign up</Text>
+                  }
+                </View>
+              </PressableScale>
+            </View>
+          </FadeIn>
 
-          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
