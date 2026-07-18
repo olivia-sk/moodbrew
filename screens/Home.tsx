@@ -25,10 +25,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { showToast } from '../lib/toast';
+import { formatHeaderDate, greetingForNow } from '../lib/format';
 import { fetchRecentBrews, RecentBrew, HOME_SHELF_SLOT_COUNT } from '../lib/recentBrews';
 import NavBar, { NavTab } from '../components/NavBar/NavBar';
 import FeatureCard from '../components/FeatureCard/FeatureCard';
-import SettingsIcon from '../components/SettingsIcon/SettingsIcon';
 import ShelfRow, { ShelfSlotData } from '../components/ShelfRow/ShelfRow';
 
 // assets
@@ -39,21 +39,9 @@ const kettleImg = require('../assets/images/kettle.png');
 const SHELF_ROWS = 3;
 const SLOTS_PER_ROW = HOME_SHELF_SLOT_COUNT / SHELF_ROWS;
 
-function formatDate(d: Date): string {
-  const day = d.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-  const mon = d.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
-  return `${day}, ${mon} ${d.getDate()}`;
-}
-
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'GOOD MORNING,';
-  if (h < 17) return 'GOOD AFTERNOON,';
-  return 'GOOD EVENING,';
-}
 
 interface Props {
-  onSettingsPress:  () => void;
+  onProfilePress:   () => void;
   onPantryPress:    () => void;
   onJournalPress:   () => void;
   onMoodInputPress: () => void;
@@ -64,7 +52,7 @@ interface Props {
 }
 
 export default function HomeScreen({
-  onSettingsPress,
+  onProfilePress,
   onPantryPress,
   onJournalPress,
   onMoodInputPress,
@@ -105,6 +93,7 @@ export default function HomeScreen({
   const handleTabPress = (tab: NavTab) => {
     if (tab === 'pantry') onPantryPress();
     if (tab === 'journal') onJournalPress();
+    if (tab === 'profile') onProfilePress();
   };
 
   const slotsForRow = (rowIndex: number): ShelfSlotData[] =>
@@ -126,17 +115,9 @@ export default function HomeScreen({
           {/* date and greeting row */}
           <View style={s.topRow}>
             <View style={s.greetingBlock}>
-              <Text style={s.date}>{formatDate(today)}</Text>
-              <Text style={s.greeting}>{greeting()}{'\n'}{userName.toUpperCase()}</Text>
+              <Text style={s.date}>{formatHeaderDate(today)}</Text>
+              <Text style={s.greeting}>{greetingForNow()}{'\n'}{userName.toUpperCase()}</Text>
             </View>
-            <TouchableOpacity
-              style={s.settingsBtn}
-              activeOpacity={0.7}
-              onPress={onSettingsPress}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <SettingsIcon size={24} color={colors['brand-text-200']} />
-            </TouchableOpacity>
           </View>
 
           {/* recent teas shelf */}
@@ -222,10 +203,6 @@ const s = StyleSheet.create({
     color: colors['brand-text-100'],
     lineHeight: fontSize.mono * 1.5,
   },
-  settingsBtn: {
-    padding: spacing.xs,
-  },
-
   // shelf section, measured off the figma frame: title at y160 and the
   // first slot row at y239
   shelfSection: {

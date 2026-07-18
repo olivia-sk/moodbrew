@@ -13,6 +13,9 @@ export interface Tea {
   Raw_Flavor_Notes: string;
   Traditional_Brew_Specs: string;
   mood_vector: number[];
+  // true for teas a user typed in themselves and haiku enriched, these are
+  // private to their creator and get a small "custom" tag in the ui
+  is_custom?: boolean;
 }
 
 // the raw shape returned by the supabase query, mood_vector has not been
@@ -29,6 +32,7 @@ export interface TeaRow {
   Raw_Flavor_Notes: string;
   Traditional_Brew_Specs: string;
   mood_vector: unknown;
+  is_custom?: boolean;
 }
 
 // the user's input from the mood input screen, carried forward so later

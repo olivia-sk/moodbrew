@@ -10,6 +10,8 @@ export interface JournalEntry {
   // 0 is earthy, 1 is floral
   earthyFloral: number;
   moodTags: string[];
+  // emotion labels from the "mood after tea" check-in, empty for old entries
+  moodAfter: string[];
   notes: string;
   createdAt: string;
 }
@@ -20,6 +22,7 @@ interface TastingLogRow {
   bitter_sweet_value: number | null;
   earthy_floral_value: number | null;
   selected_tags: string[] | null;
+  mood_after: string[] | null;
   notes: string | null;
   created_at: string;
 }
@@ -28,7 +31,7 @@ interface TastingLogRow {
 export async function fetchJournalEntries(userId: string): Promise<JournalEntry[]> {
   const { data, error } = await supabase
     .from('tasting_logs')
-    .select('id, tea_name, bitter_sweet_value, earthy_floral_value, selected_tags, notes, created_at')
+    .select('id, tea_name, bitter_sweet_value, earthy_floral_value, selected_tags, mood_after, notes, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -42,6 +45,7 @@ export async function fetchJournalEntries(userId: string): Promise<JournalEntry[
     bitterSweet: row.bitter_sweet_value ?? 0.5,
     earthyFloral: row.earthy_floral_value ?? 0.5,
     moodTags: row.selected_tags ?? [],
+    moodAfter: row.mood_after ?? [],
     notes: row.notes ?? '',
     createdAt: row.created_at,
   }));
@@ -55,6 +59,8 @@ export interface TastingLogPayload {
   // 0 is earthy, 1 is floral
   earthyFloral: number;
   flavors: string[];
+  // emotion labels picked in the "mood after tea" check-in
+  moodAfter: string[];
   notes: string;
 }
 
@@ -67,6 +73,7 @@ export async function logTastingSession(payload: TastingLogPayload): Promise<voi
     bitter_sweet_value: payload.bitterSweet,
     earthy_floral_value: payload.earthyFloral,
     selected_tags: payload.flavors,
+    mood_after: payload.moodAfter,
     notes: payload.notes,
   });
 

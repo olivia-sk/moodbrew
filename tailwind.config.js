@@ -25,7 +25,7 @@ module.exports = {
         'brand-brown':   '#312310',
       },
       fontFamily: {
-        serif: ['InstrumentSerif_400Regular'],
+        serif: ['GoldenGoose'],
         mono:  ['IBMPlexMono_400Regular'],
       },
       fontSize: {

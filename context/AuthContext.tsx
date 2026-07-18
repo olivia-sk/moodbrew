@@ -30,11 +30,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore persisted session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    // Restore persisted session on mount. A stale/invalid refresh token in
+    // storage makes this reject rather than resolve with a null session, so
+    // treat a failure the same as "signed out" instead of leaving it unhandled.
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setLoading(false);
+      })
+      .catch(() => {
+        setSession(null);
+        setLoading(false);
+      });
 
     // Keep session in sync with Supabase auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

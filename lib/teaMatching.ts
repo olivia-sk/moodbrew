@@ -58,7 +58,7 @@ export async function fetchTeaDatabase(): Promise<Tea[]> {
   const { data, error } = await supabase
     .from(TEA_TABLE)
     .select(
-      'Name, Category, Traditional_Origin, Caffeine_Level, Primary_Compounds, Raw_Flavor_Notes, Traditional_Brew_Specs, mood_vector',
+      'Name, Category, Traditional_Origin, Caffeine_Level, Primary_Compounds, Raw_Flavor_Notes, Traditional_Brew_Specs, mood_vector, is_custom',
     );
 
   if (error) {
@@ -98,19 +98,56 @@ export function calculateCosineSimilarity(vectorA: number[], vectorB: number[]):
   return dotProduct / (magnitudeA * magnitudeB);
 }
 
+// the sweet/spicy craving slider does not map onto a mood vector dimension,
+// so it nudges the similarity score through the tea's flavor notes instead.
+// hits against these keyword lists decide whether a tea reads sweet or spicy
+const SWEET_FLAVOR_KEYWORDS = ['sweet', 'honey', 'caramel', 'creamy', 'vanilla', 'chocolate'];
+const SPICY_FLAVOR_KEYWORDS = ['spicy', 'ginger', 'cinnamon', 'pepper', 'warming', 'clove'];
+
+// how hard a fully committed sweet or spicy craving can bend the cosine
+// score, kept small on purpose so the mood vector still leads the match
+const FLAVOR_BIAS_MAX_BOOST = 0.1;
+
+// where a tea's flavor notes sit on the sweet(-1) to spicy(+1) axis
+function flavorSpiceReading(tea: Tea): number {
+  const notes = tea.Raw_Flavor_Notes.toLowerCase();
+  const sweetHits = SWEET_FLAVOR_KEYWORDS.filter((keyword) => notes.includes(keyword)).length;
+  const spicyHits = SPICY_FLAVOR_KEYWORDS.filter((keyword) => notes.includes(keyword)).length;
+  if (sweetHits === 0 && spicyHits === 0) return 0;
+  return (spicyHits - sweetHits) / Math.max(sweetHits, spicyHits);
+}
+
+// multiplier applied on top of cosine similarity. flavorBias is the raw
+// slider value, 0 = craving sweet, 0.5 = no preference, 1 = craving spicy
+function flavorBiasMultiplier(tea: Tea, flavorBias: number | undefined): number {
+  if (flavorBias === undefined) return 1;
+  const strength = (flavorBias - 0.5) * 2; // -1 sweet .. +1 spicy
+  if (strength === 0) return 1;
+  return 1 + FLAVOR_BIAS_MAX_BOOST * strength * flavorSpiceReading(tea);
+}
+
 // scores the user input vector against every tea in the database and
-// returns the single tea with the highest cosine similarity
-export function findBestTeaMatch(userInputVector: number[], teaDatabase: Tea[]): Tea {
+// returns the single tea with the highest cosine similarity, optionally
+// nudged toward the sweet or spicy end by the craving slider
+export function findBestTeaMatch(
+  userInputVector: number[],
+  teaDatabase: Tea[],
+  flavorBias?: number,
+): Tea {
   if (teaDatabase.length === 0) {
     throw new Error('tea database is empty, cannot find a match');
   }
 
   let bestTea = teaDatabase[0];
-  let bestScore = calculateCosineSimilarity(userInputVector, bestTea.mood_vector);
+  let bestScore =
+    calculateCosineSimilarity(userInputVector, bestTea.mood_vector) *
+    flavorBiasMultiplier(bestTea, flavorBias);
 
   for (let i = 1; i < teaDatabase.length; i++) {
     const tea = teaDatabase[i];
-    const score = calculateCosineSimilarity(userInputVector, tea.mood_vector);
+    const score =
+      calculateCosineSimilarity(userInputVector, tea.mood_vector) *
+      flavorBiasMultiplier(tea, flavorBias);
     if (score > bestScore) {
       bestScore = score;
       bestTea = tea;
@@ -132,7 +169,7 @@ export async function fetchUserPantryTeas(userId: string): Promise<Tea[]> {
   const { data, error } = await supabase
     .from(PANTRY_TABLE)
     .select(
-      'tea:tea-database(Name, Category, Traditional_Origin, Caffeine_Level, Primary_Compounds, Raw_Flavor_Notes, Traditional_Brew_Specs, mood_vector)',
+      'tea:tea-database(Name, Category, Traditional_Origin, Caffeine_Level, Primary_Compounds, Raw_Flavor_Notes, Traditional_Brew_Specs, mood_vector, is_custom)',
     )
     .eq('user_id', userId)
     .eq('in_stock', true);
@@ -166,15 +203,16 @@ function pickRandomTea(teaDatabase: Tea[], excludeName: string): Tea {
 export async function findBestTeaMatchFromPantry(
   userInputVector: number[],
   userId: string,
+  flavorBias?: number,
 ): Promise<PantryMatchResult> {
   const pantryTeas = await fetchUserPantryTeas(userId);
 
   if (pantryTeas.length > 0) {
-    return { tea: findBestTeaMatch(userInputVector, pantryTeas), usedFallback: false };
+    return { tea: findBestTeaMatch(userInputVector, pantryTeas, flavorBias), usedFallback: false };
   }
 
   const fullDatabase = await fetchTeaDatabase();
-  return { tea: findBestTeaMatch(userInputVector, fullDatabase), usedFallback: true };
+  return { tea: findBestTeaMatch(userInputVector, fullDatabase, flavorBias), usedFallback: true };
 }
 
 // swaps the current match for a random different tea from the same pool,

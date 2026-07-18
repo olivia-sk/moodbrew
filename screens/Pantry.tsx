@@ -60,9 +60,10 @@ const SLOTS_PER_ROW = PANTRY_SLOT_COUNT / CABINET_ROWS;
 interface Props {
   onHomePress: () => void;
   onJournalPress: () => void;
+  onProfilePress: () => void;
 }
 
-export default function PantryScreen({ onHomePress, onJournalPress }: Props) {
+export default function PantryScreen({ onHomePress, onJournalPress, onProfilePress }: Props) {
   const { user } = useAuth();
   const [activeTab] = useState<NavTab>('pantry');
 
@@ -86,6 +87,7 @@ export default function PantryScreen({ onHomePress, onJournalPress }: Props) {
   const handleTabPress = (tab: NavTab) => {
     if (tab === 'home') onHomePress();
     if (tab === 'journal') onJournalPress();
+    if (tab === 'profile') onProfilePress();
   };
 
   // opens the tea picker for a given slot, loading the master tea list on
@@ -259,6 +261,7 @@ export default function PantryScreen({ onHomePress, onJournalPress }: Props) {
         teas={teaOptions}
         onSelect={handleSelectTea}
         onClose={() => { setPickerVisible(false); setSelectedSlotIndex(null); }}
+        onTeaCreated={(tea) => setTeaOptions((current) => [...current, tea])}
       />
     </SafeAreaView>
     </View>

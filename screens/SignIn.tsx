@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authStyles as s } from '../styles/auth';
@@ -67,10 +68,20 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
+      {/* android already resizes the window for the keyboard, adding the
+          'height' behavior on top made the layout jump, so only ios needs
+          the padding behavior. the scroll view keeps the focused input
+          reachable when the keyboard shrinks the space */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <View className={s.content}>
 
           {/* wordmark and doodle */}
@@ -144,6 +155,7 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
           </View>
 
         </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

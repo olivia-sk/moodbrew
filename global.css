@@ -8,4 +8,15 @@
    frame in App.tsx actually stretch full height on web. */
 html, body, #root {
   height: 100%;
+  /* keep scrolling inside the app frame, no rubber-banding the page
+     behind it or chaining scroll to the browser */
+  overscroll-behavior: contain;
+}
+
+/* crisper text on macos browsers, and never let the browser fake a bold
+   or italic golden goose that isn't loaded */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
 }

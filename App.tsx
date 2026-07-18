@@ -3,10 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
-import {
-  InstrumentSerif_400Regular,
-  useFonts as useSerifFonts,
-} from '@expo-google-fonts/instrument-serif';
+import { useFonts as useSerifFonts } from 'expo-font';
 import {
   IBMPlexMono_400Regular,
   useFonts as useMonoFonts,
@@ -31,17 +28,23 @@ import MatchCardScreen from './screens/MatchCard';
 import KettleScreen    from './screens/Kettle';
 import PairingsScreen  from './screens/Pairings';
 import SettingsScreen  from './screens/Settings';
+import ProfileScreen   from './screens/Profile';
 
 SplashScreen.preventAutoHideAsync();
 
 // navigation state
 type AppScreen =
   | 'welcome' | 'signIn' | 'signUp' | 'name' | 'home' | 'pantry' | 'journal'
-  | 'moodInput' | 'matchCard' | 'kettle' | 'pairings' | 'settings' | 'discovery';
+  | 'moodInput' | 'matchCard' | 'kettle' | 'pairings' | 'settings' | 'discovery'
+  | 'profile';
 
 export default function App() {
   // fonts
-  const [serifLoaded] = useSerifFonts({ InstrumentSerif_400Regular });
+  // golden goose ships as a local ttf, the static regular cut is loaded
+  // (not the variable file) since react native can't drive variable axes
+  const [serifLoaded] = useSerifFonts({
+    GoldenGoose: require('./assets/fonts/GoldenGoose-Regular.ttf'),
+  });
   const [monoLoaded]  = useMonoFonts({ IBMPlexMono_400Regular });
   const fontsReady = serifLoaded && monoLoaded;
 
@@ -132,7 +135,7 @@ export default function App() {
       case 'home':
         return (
           <HomeScreen
-            onSettingsPress={() => setScreen('settings')}
+            onProfilePress={() => setScreen('profile')}
             onPantryPress={() => setScreen('pantry')}
             onJournalPress={() => setScreen('journal')}
             onMoodInputPress={() => setScreen('moodInput')}
@@ -146,6 +149,7 @@ export default function App() {
           <PantryScreen
             onHomePress={() => setScreen('home')}
             onJournalPress={() => setScreen('journal')}
+            onProfilePress={() => setScreen('profile')}
           />
         );
 
@@ -154,6 +158,7 @@ export default function App() {
           <JournalScreen
             onHomePress={() => setScreen('home')}
             onPantryPress={() => setScreen('pantry')}
+            onProfilePress={() => setScreen('profile')}
           />
         );
 
@@ -231,9 +236,22 @@ export default function App() {
         );
 
       case 'settings':
+        // settings is reached from the profile tab's gear now, so back
+        // returns there rather than to home
         return (
           <SettingsScreen
-            onBack={() => setScreen('home')}
+            onBack={() => setScreen('profile')}
+            onProfilePress={() => setScreen('profile')}
+          />
+        );
+
+      case 'profile':
+        return (
+          <ProfileScreen
+            onHomePress={() => setScreen('home')}
+            onPantryPress={() => setScreen('pantry')}
+            onJournalPress={() => setScreen('journal')}
+            onSettingsPress={() => setScreen('settings')}
           />
         );
     }

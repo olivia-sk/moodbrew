@@ -20,9 +20,10 @@ import { useAuth } from '../context/AuthContext';
 
 interface Props {
   onBack: () => void;
+  onProfilePress: () => void;
 }
 
-export default function SettingsScreen({ onBack }: Props) {
+export default function SettingsScreen({ onBack, onProfilePress }: Props) {
   const { user, userName, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
 
@@ -70,6 +71,11 @@ export default function SettingsScreen({ onBack }: Props) {
               <Text style={s.rowLabel}>Email</Text>
               <Text style={s.rowValue} numberOfLines={1}>{user?.email ?? '\u2014'}</Text>
             </View>
+            <View style={s.divider} />
+            <TouchableOpacity style={s.row} activeOpacity={0.7} onPress={onProfilePress}>
+              <Text style={s.rowLabel}>Profile & badges</Text>
+              <Text style={s.rowValue}>\u2192</Text>
+            </TouchableOpacity>
           </View>
         </View>
 

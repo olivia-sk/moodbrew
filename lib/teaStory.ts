@@ -22,6 +22,8 @@ export interface TeaStoryPayload {
   artist: string;
   music_pairing_vibe: string;
   snack_pairing: string;
+  // one gentle sensory line shown while the tea steeps, tea ritual not therapy
+  ritual_prompt: string;
 }
 
 // the full state the match card hands off to the kettle/timer screen
@@ -37,6 +39,7 @@ const FALLBACK_STORY: TeaStoryPayload = {
   artist: 'jane remover',
   music_pairing_vibe: 'hazy bedroom production with a calm but alt whimsy ache to it',
   snack_pairing: 'rice cakes',
+  ritual_prompt: 'while it steeps, watch the colour slowly deepen in the cup.',
 };
 
 function isTeaStoryPayload(value: unknown): value is TeaStoryPayload {
@@ -47,7 +50,8 @@ function isTeaStoryPayload(value: unknown): value is TeaStoryPayload {
     typeof candidate.song_title === 'string' &&
     typeof candidate.artist === 'string' &&
     typeof candidate.music_pairing_vibe === 'string' &&
-    typeof candidate.snack_pairing === 'string'
+    typeof candidate.snack_pairing === 'string' &&
+    typeof candidate.ritual_prompt === 'string'
   );
 }
 

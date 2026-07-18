@@ -27,7 +27,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import CardStack, { cardNumberFor } from '../components/CardStack/CardStack';
+import PressableScale from '../components/PressableScale/PressableScale';
 import { formatCountdown, parseBrewSeconds } from '../lib/brewTimer';
+import { formatCaffeineMg } from '../lib/format';
 import { TeaStoryResult } from '../lib/teaStory';
 import { Tea } from '../lib/types';
 
@@ -121,7 +123,7 @@ export default function KettleScreen({ tea, story, onBack, onSkipToPairings }: P
 
               <View style={s.field}>
                 <Text style={s.fieldLabel}>Caffeine level</Text>
-                <Text style={s.fieldValue}>{Math.round(tea.Caffeine_Level * 100)}%</Text>
+                <Text style={s.fieldValue}>{formatCaffeineMg(tea.Caffeine_Level)}</Text>
               </View>
 
               <View style={s.field}>
@@ -131,9 +133,9 @@ export default function KettleScreen({ tea, story, onBack, onSkipToPairings }: P
             </CardStack>
 
             <View style={s.buttons}>
-              <TouchableOpacity style={s.actionBtn} activeOpacity={0.85} onPress={handleStartTimer}>
+              <PressableScale style={s.actionBtn} onPress={handleStartTimer}>
                 <Text style={s.actionBtnText}>Start timer</Text>
-              </TouchableOpacity>
+              </PressableScale>
 
               {/* invisible spacer the same size as the match card shuffle row, so
                   start timer lands at the exact same spot as start brewing */}
@@ -151,9 +153,9 @@ export default function KettleScreen({ tea, story, onBack, onSkipToPairings }: P
             </View>
 
             <View style={s.buttonArea}>
-              <TouchableOpacity style={s.actionBtn} activeOpacity={0.85} onPress={handleSkipToPairings}>
+              <PressableScale style={s.actionBtn} onPress={handleSkipToPairings}>
                 <Text style={s.actionBtnText}>Skip to pairings</Text>
-              </TouchableOpacity>
+              </PressableScale>
             </View>
           </>
         )}
@@ -260,6 +262,8 @@ const s = StyleSheet.create({
     fontSize: fontSize.h1,
     color: colors['brand-text-100'],
     letterSpacing: 1,
+    // digits keep a fixed width so the countdown never jitters sideways
+    fontVariant: ['tabular-nums'],
   },
 
   // button area pinned at bottom, used by the brewing state's skip button

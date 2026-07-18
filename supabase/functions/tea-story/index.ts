@@ -37,12 +37,15 @@ interface TeaStoryPayload {
   artist: string;
   music_pairing_vibe: string;
   snack_pairing: string;
+  ritual_prompt: string;
 }
 
 function buildPrompt(body: TeaStoryRequestBody): string {
+  // moodLabel can now be several feelings joined with "+", roughest first,
+  // e.g. "Stressed + Tired", tune the tone to the first (roughest) one
   const moodLine = body.moodLabel
-    ? `the drinker tapped the mood button "${body.moodLabel}"`
-    : 'the drinker did not pick a specific mood button';
+    ? `the drinker described their mood as "${body.moodLabel}" (when several feelings are listed, the first one is what needs the most care)`
+    : 'the drinker did not describe a specific mood';
   const cravingLine =
     body.craving < 0.4
       ? 'they slid the craving dial toward earthy'
@@ -76,10 +79,11 @@ rules:
 3. for "song_title" and "artist": pick a real, specific song that fits the requested genres or is by an artist similar in style, scene, and vibe to our benchmark lineup: glass beach, origami angels, jane remover, phoebe bridgers, ethel cain, the marias, caroline polachek, beabadoobee, clairo, or julia wolf. it does not have to be limited to these exact names, but the track must stay strictly inside their alternative, indie, math rock, hyperpop, dream pop, or emo sonic universes.
 4. for "music_pairing_vibe": detail the specific musical instruments and production quirks of the song you picked, things like midi glitches, sudden tempo changes, or twinkling guitars, that tie it directly to this underground music universe. write it in the same warm and human tone, with none of the forbidden words above.
 5. for "snack_pairing": pick something specific and comforting, limited to this kind of snack: ${snackType}.
+6. for "ritual_prompt": write one gentle sentence, 20 words maximum, inviting the drinker to notice something sensory while the tea steeps (the aroma, the colour deepening, the warmth of the cup), tuned softly to their mood. this is a tea ritual, not therapy: no clinical, medical, or wellness-app language, no breathing exercises framed as techniques, no promises about how they will feel.
 
 respond with strict minified json only, no markdown, no code fences, no commentary,
 matching exactly this shape:
-{"why_this_tea":"string","song_title":"string","artist":"string","music_pairing_vibe":"string","snack_pairing":"string"}`;
+{"why_this_tea":"string","song_title":"string","artist":"string","music_pairing_vibe":"string","snack_pairing":"string","ritual_prompt":"string"}`;
 }
 
 // haiku sometimes wraps json in a markdown code fence even when told not to, strip it defensively
@@ -97,7 +101,8 @@ function isTeaStoryPayload(value: unknown): value is TeaStoryPayload {
     typeof candidate.song_title === 'string' &&
     typeof candidate.artist === 'string' &&
     typeof candidate.music_pairing_vibe === 'string' &&
-    typeof candidate.snack_pairing === 'string'
+    typeof candidate.snack_pairing === 'string' &&
+    typeof candidate.ritual_prompt === 'string'
   );
 }
 
@@ -174,7 +179,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
-        max_tokens: 200,
+        max_tokens: 300,
         messages: [{ role: 'user', content: buildPrompt(body) }],
       }),
     });

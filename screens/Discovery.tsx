@@ -24,6 +24,7 @@ import PressableScale from '../components/PressableScale/PressableScale';
 import FadeIn from '../components/FadeIn/FadeIn';
 import { showToast } from '../lib/toast';
 import { fetchDiscoveryDeck } from '../lib/discovery';
+import { formatCaffeineMg } from '../lib/format';
 import { addToWishlist } from '../lib/wishlist';
 import { cardNumberFor } from '../components/CardStack/CardStack';
 import { Tea } from '../lib/types';
@@ -180,6 +181,11 @@ export default function DiscoveryScreen({ onBack }: Props) {
       <View style={s.field}>
         <Text style={s.fieldLabel}>Category</Text>
         <Text style={s.fieldValue}>{tea.Category}</Text>
+      </View>
+
+      <View style={s.field}>
+        <Text style={s.fieldLabel}>Caffeine</Text>
+        <Text style={s.fieldValue}>{formatCaffeineMg(tea.Caffeine_Level)}</Text>
       </View>
 
       <View style={s.field}>

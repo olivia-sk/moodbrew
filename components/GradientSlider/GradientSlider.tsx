@@ -2,7 +2,17 @@
 // and the pairings screen tasting note sliders
 // built with react-native-svg and PanResponder so it needs no extra native dependency
 import React, { useRef, useState } from 'react';
-import { GestureResponderEvent, LayoutChangeEvent, PanResponder, View, Text } from 'react-native';
+import {
+  Animated,
+  GestureResponderEvent,
+  LayoutChangeEvent,
+  Modal,
+  PanResponder,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import {
   GRADIENT_HIGH_COLOR,
@@ -12,19 +22,61 @@ import {
   TRACK_HEIGHT,
 } from './styles';
 
+// short educational blurb shown behind the info icon, for drinkers who
+// don't yet know what terms like earthy or bright mean
+export interface SliderInfo {
+  title: string;
+  body: string;
+}
+
 interface GradientSliderProps {
   // 0 sits at leftLabel, 1 sits at rightLabel
   value: number;
   onChange: (value: number) => void;
   leftLabel: string;
   rightLabel: string;
+  // optional descriptive phrases spread evenly across the track, the one
+  // matching the current value is shown under the slider and changes live
+  // as the thumb moves (e.g. ["deep & grounding", "balanced", "crisp"])
+  descriptors?: string[];
+  // when set, renders a small info icon that opens an explainer tooltip
+  info?: SliderInfo;
 }
 
 function clampRatio(ratio: number): number {
   return Math.min(1, Math.max(0, ratio));
 }
 
-export default function GradientSlider({ value, onChange, leftLabel, rightLabel }: GradientSliderProps) {
+// maps the 0-1 value onto one of the descriptor phrases, value 1 still
+// lands on the last phrase rather than running off the end of the array
+function descriptorFor(descriptors: string[], value: number): string {
+  const index = Math.min(descriptors.length - 1, Math.floor(value * descriptors.length));
+  return descriptors[index];
+}
+
+export default function GradientSlider({
+  value,
+  onChange,
+  leftLabel,
+  rightLabel,
+  descriptors,
+  info,
+}: GradientSliderProps) {
+  const [infoVisible, setInfoVisible] = useState(false);
+
+  // the thumb grows a touch while a finger is on it, a tiny bit of
+  // tactile feedback that the handle is live. the spring is interruptible
+  // so quick grabs and releases stay smooth
+  const thumbScale = useRef(new Animated.Value(1)).current;
+  const springThumbTo = (value: number) => {
+    Animated.spring(thumbScale, {
+      toValue: value,
+      stiffness: 300,
+      damping: 20,
+      mass: 0.6,
+      useNativeDriver: true,
+    }).start();
+  };
   const [trackWidth, setTrackWidth] = useState(0);
 
   // the track's own width and its absolute position on screen, kept in
@@ -71,6 +123,7 @@ export default function GradientSlider({ value, onChange, leftLabel, rightLabel 
       // snapping back to the left when the touch starts directly on the
       // thumb instead of empty track space
       onPanResponderGrant: (event: GestureResponderEvent) => {
+        springThumbTo(1.15);
         touchAreaRef.current?.measure((_x, _y, measuredWidth, _height, measuredPageX) => {
           widthRef.current = measuredWidth;
           pageXRef.current = measuredPageX;
@@ -84,6 +137,9 @@ export default function GradientSlider({ value, onChange, leftLabel, rightLabel 
       onPanResponderMove: (event: GestureResponderEvent) => {
         updateFromPageX(event.nativeEvent.pageX);
       },
+
+      onPanResponderRelease: () => springThumbTo(1),
+      onPanResponderTerminate: () => springThumbTo(1),
     });
   }
 
@@ -108,13 +164,51 @@ export default function GradientSlider({ value, onChange, leftLabel, rightLabel 
             <Rect x="0" y="0" width="100%" height={TRACK_HEIGHT} fill="url(#gradientSliderTrack)" />
           </Svg>
         </View>
-        <View style={[s.thumb, { left: thumbLeft }]} />
+        <Animated.View
+          style={[s.thumb, { left: thumbLeft, transform: [{ scale: thumbScale }] }]}
+        />
       </View>
 
       <View style={s.labelRow}>
-        <Text style={s.label}>{leftLabel}</Text>
+        <View style={s.labelGroup}>
+          <Text style={s.label}>{leftLabel}</Text>
+          {info && (
+            <TouchableOpacity
+              onPress={() => setInfoVisible(true)}
+              hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+            >
+              <Text style={s.infoIcon}>ⓘ</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {descriptors && descriptors.length > 0 && (
+          <Text style={s.descriptor}>{descriptorFor(descriptors, value)}</Text>
+        )}
         <Text style={s.label}>{rightLabel}</Text>
       </View>
+
+      {info && (
+        <Modal
+          visible={infoVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setInfoVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setInfoVisible(false)}>
+            <View style={s.infoBackdrop}>
+              <TouchableWithoutFeedback>
+                <View style={s.infoCard}>
+                  <Text style={s.infoTitle}>{info.title}</Text>
+                  <Text style={s.infoBody}>{info.body}</Text>
+                  <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                    <Text style={s.infoDismiss}>Got it</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      )}
     </View>
   );
 }

@@ -23,7 +23,7 @@ export async function fetchPantrySlots(userId: string): Promise<PantrySlots> {
   const { data, error } = await supabase
     .from(PANTRY_TABLE)
     .select(
-      'slot_number, tea:tea-database(Name, Category, Traditional_Origin, Caffeine_Level, Primary_Compounds, Raw_Flavor_Notes, Traditional_Brew_Specs, mood_vector)',
+      'slot_number, tea:tea-database(Name, Category, Traditional_Origin, Caffeine_Level, Primary_Compounds, Raw_Flavor_Notes, Traditional_Brew_Specs, mood_vector, is_custom)',
     )
     .eq('user_id', userId)
     .eq('in_stock', true)

@@ -24,7 +24,8 @@ export const authStyles = {
 
   // form
   form: 'mt-[67px] gap-[13px]',
-  input: 'h-[56px] bg-light-100 border border-dark-100 rounded-xs px-xl font-mono text-body-small text-brand-text-100',
+  // inputs stay at 16px so ios safari on web doesn't zoom the page on focus
+  input: 'h-[56px] bg-light-100 border border-dark-100 rounded-xs px-xl font-mono text-body text-brand-text-100',
   inputCentered: 'text-center',
 
   // forgot password link

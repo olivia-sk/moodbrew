@@ -26,6 +26,7 @@ import FadeIn from '../components/FadeIn/FadeIn';
 interface Props {
   onHomePress: () => void;
   onPantryPress: () => void;
+  onProfilePress: () => void;
 }
 
 function formatEntryDate(iso: string): string {
@@ -77,6 +78,19 @@ function JournalCard({ entry }: { entry: JournalEntry }) {
         </View>
       )}
 
+      {entry.moodAfter.length > 0 && (
+        <View style={s.moodAfterBlock}>
+          <Text style={s.moodAfterLabel}>MOOD AFTER TEA</Text>
+          <View style={s.tagRow}>
+            {entry.moodAfter.map((mood) => (
+              <View key={mood} style={[s.tag, s.moodAfterTag]}>
+                <Text style={[s.tagText, s.moodAfterTagText]}>{mood.toUpperCase()}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
       {!!entry.notes && <Text style={s.notes}>{entry.notes}</Text>}
 
       <View style={s.sliders}>
@@ -87,7 +101,7 @@ function JournalCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
-export default function JournalScreen({ onHomePress, onPantryPress }: Props) {
+export default function JournalScreen({ onHomePress, onPantryPress, onProfilePress }: Props) {
   const { user } = useAuth();
   const [activeTab] = useState<NavTab>('journal');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -113,6 +127,7 @@ export default function JournalScreen({ onHomePress, onPantryPress }: Props) {
   const handleTabPress = (tab: NavTab) => {
     if (tab === 'home') onHomePress();
     if (tab === 'pantry') onPantryPress();
+    if (tab === 'profile') onProfilePress();
   };
 
   return (
@@ -233,10 +248,11 @@ const s = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
+  // rounded squares like every other chip and button in the app
   tag: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors['dark-100-o20'],
-    borderRadius: 999,
+    borderRadius: 4,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
@@ -252,6 +268,24 @@ const s = StyleSheet.create({
     fontSize: fontSize['body-small'],
     color: colors['brand-text-100'],
     lineHeight: fontSize['body-small'] * 1.6,
+  },
+
+  // the "mood after tea" check-in chips, olive to set them apart from
+  // the flavour tags above
+  moodAfterBlock: {
+    gap: spacing.sm,
+  },
+  moodAfterLabel: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize['mono-small'],
+    color: colors['brand-text-200'],
+    letterSpacing: 1,
+  },
+  moodAfterTag: {
+    borderColor: colors['accent-olive'],
+  },
+  moodAfterTagText: {
+    color: colors['accent-olive'],
   },
 
   sliders: {

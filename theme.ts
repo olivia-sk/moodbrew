@@ -52,9 +52,9 @@ export const fontSize = {
 } as const;
 
 // ─── font families ─────────────────────────────────────────────────────────
-// Instrument Serif  → loaded via @expo-google-fonts/instrument-serif
-// IBM Plex Mono     → loaded via @expo-google-fonts/ibm-plex-mono
+// Golden Goose   → loaded from assets/fonts/GoldenGoose-Regular.ttf
+// IBM Plex Mono  → loaded via @expo-google-fonts/ibm-plex-mono
 export const fonts = {
-  serif: 'InstrumentSerif_400Regular',
+  serif: 'GoldenGoose',
   mono:  'IBMPlexMono_400Regular',
 } as const;

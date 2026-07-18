@@ -24,6 +24,8 @@ import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -36,7 +38,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import GradientSlider from '../components/GradientSlider/GradientSlider';
+import EmotionPicker from '../components/EmotionPicker/EmotionPicker';
+import PressableScale from '../components/PressableScale/PressableScale';
 import { useAuth } from '../context/AuthContext';
+import { EmotionKey, EMOTIONS } from '../lib/moodVectors';
 import { logTastingSession } from '../lib/tastingLog';
 import { TeaStoryResult } from '../lib/teaStory';
 import { Tea } from '../lib/types';
@@ -61,6 +66,7 @@ export default function PairingsScreen({ tea, story, onBack, onDone }: Props) {
   const [addingFlavour, setAddingFlavour] = useState(false);
   const [newFlavourText, setNewFlavourText] = useState('');
   const [notes, setNotes] = useState('');
+  const [moodAfter, setMoodAfter] = useState<EmotionKey[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   // guards against the add flavour input firing its commit twice: pressing
@@ -109,6 +115,8 @@ export default function PairingsScreen({ tea, story, onBack, onDone }: Props) {
         bitterSweet,
         earthyFloral,
         flavors: selectedFlavours,
+        // store the human readable labels so the journal shows them as-is
+        moodAfter: EMOTIONS.filter((e) => moodAfter.includes(e.key)).map((e) => e.label),
         notes: notes.trim(),
       });
       onDone();
@@ -129,6 +137,11 @@ export default function PairingsScreen({ tea, story, onBack, onDone }: Props) {
         <Text style={s.backLabel}>back</Text>
       </TouchableOpacity>
 
+      {/* keeps the thoughts input above the keyboard instead of typing blind */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
         {/* "your brew is ready." centered serif title */}
@@ -157,8 +170,28 @@ export default function PairingsScreen({ tea, story, onBack, onDone }: Props) {
         <View style={s.card}>
           <Text style={s.cardLabel}>Tasting Notes</Text>
 
-          <GradientSlider value={bitterSweet} onChange={setBitterSweet} leftLabel="Bitter" rightLabel="Sweet" />
-          <GradientSlider value={earthyFloral} onChange={setEarthyFloral} leftLabel="Earthy" rightLabel="Floral" />
+          <GradientSlider
+            value={bitterSweet}
+            onChange={setBitterSweet}
+            leftLabel="Bitter"
+            rightLabel="Sweet"
+            info={{
+              title: 'Bitter vs Sweet',
+              body:
+                'Bitterness is the sharp, drying edge from tannins, often from a hotter or longer steep. Sweetness reads as honey, malt or fruit. Log where this cup actually landed for you.',
+            }}
+          />
+          <GradientSlider
+            value={earthyFloral}
+            onChange={setEarthyFloral}
+            leftLabel="Earthy"
+            rightLabel="Floral"
+            info={{
+              title: 'Earthy vs Floral',
+              body:
+                'Earthy tastes of soil, wood, moss and smoke. Floral leans toward jasmine, rose or orchid perfume. Most cups land somewhere in between.',
+            }}
+          />
 
           <View style={s.field}>
             <Text style={s.subLabel}>Flavours</Text>
@@ -201,6 +234,12 @@ export default function PairingsScreen({ tea, story, onBack, onDone }: Props) {
           </View>
         </View>
 
+        {/* mood after tea check-in, closes the loop on the session */}
+        <View style={s.card}>
+          <Text style={s.cardLabel}>How do you feel now?</Text>
+          <EmotionPicker selected={moodAfter} onChange={setMoodAfter} compact />
+        </View>
+
         {/* thoughts card */}
         <View style={s.card}>
           <Text style={s.cardLabel}>Thoughts</Text>
@@ -215,19 +254,15 @@ export default function PairingsScreen({ tea, story, onBack, onDone }: Props) {
         </View>
 
         {/* log to shelf button */}
-        <TouchableOpacity
-          style={s.actionBtn}
-          activeOpacity={0.85}
-          onPress={handleLogToShelf}
-          disabled={submitting}
-        >
+        <PressableScale style={s.actionBtn} onPress={handleLogToShelf} disabled={submitting}>
           {submitting
             ? <ActivityIndicator color={colors['light-100']} />
             : <Text style={s.actionBtnText}>Log to my shelf</Text>
           }
-        </TouchableOpacity>
+        </PressableScale>
 
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -370,12 +405,13 @@ const s = StyleSheet.create({
   },
 
   // thoughts multiline input with dashed bottom border
+  // 16px so ios safari never zooms on focus
   notesInput: {
     fontFamily: fonts.mono,
-    fontSize: fontSize['body-small'],
+    fontSize: fontSize.body,
     color: colors['brand-text-100'],
     letterSpacing: 0.5,
-    lineHeight: fontSize['body-small'] * 1.6,
+    lineHeight: fontSize.body * 1.6,
     borderBottomWidth: 1,
     borderBottomColor: colors['light-400'],
     borderStyle: 'dashed',
