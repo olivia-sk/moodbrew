@@ -18,6 +18,7 @@
 // - "skip to pairings" button: y=680 h=57
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   StatusBar,
   StyleSheet,
   Text,
@@ -25,13 +26,19 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts, fontSize, spacing } from '../theme';
+import { colors, fonts, fontSize, motion, spacing } from '../theme';
 import CardStack, { cardNumberFor } from '../components/CardStack/CardStack';
 import PressableScale from '../components/PressableScale/PressableScale';
 import { formatCountdown, parseBrewSeconds } from '../lib/brewTimer';
 import { formatCaffeineMg } from '../lib/format';
 import { TeaStoryResult } from '../lib/teaStory';
 import { Tea } from '../lib/types';
+import { useReduceMotion } from '../lib/useReduceMotion';
+
+// how long the countdown holds on 0:00, doing a soft pulse, before handing
+// off to pairings. the timer finishing is rare and the app's one genuinely
+// emotional moment, so it gets an acknowledgement instead of an instant cut
+const COMPLETION_HOLD_MS = 600;
 
 type Phase = 'overview' | 'brewing';
 
@@ -47,6 +54,8 @@ export default function KettleScreen({ tea, story, onBack, onSkipToPairings }: P
   const [phase, setPhase] = useState<Phase>('overview');
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clockScale = useRef(new Animated.Value(1)).current;
+  const reduceMotion = useReduceMotion();
 
   const clearTicking = () => {
     if (intervalRef.current !== null) {
@@ -84,10 +93,20 @@ export default function KettleScreen({ tea, story, onBack, onSkipToPairings }: P
   }, [phase]);
 
   useEffect(() => {
-    if (phase === 'brewing' && secondsRemaining <= 0) {
-      clearTicking();
-      onSkipToPairings(tea, story);
+    if (phase !== 'brewing' || secondsRemaining > 0) return;
+    clearTicking();
+
+    if (!reduceMotion) {
+      Animated.sequence([
+        Animated.spring(clockScale, { toValue: 1.06, ...motion.spring, useNativeDriver: true }),
+        Animated.spring(clockScale, { toValue: 1, ...motion.spring, useNativeDriver: true }),
+      ]).start();
     }
+
+    const holdTimer = setTimeout(() => {
+      onSkipToPairings(tea, story);
+    }, COMPLETION_HOLD_MS);
+    return () => clearTimeout(holdTimer);
   }, [phase, secondsRemaining]);
 
   return (
@@ -149,7 +168,9 @@ export default function KettleScreen({ tea, story, onBack, onSkipToPairings }: P
             {/* state 2: countdown timer box */}
             <View style={s.timerBox}>
               <Text style={s.timerHeading}>brewing your mood</Text>
-              <Text style={s.timerClock}>{formatCountdown(secondsRemaining)}</Text>
+              <Animated.Text style={[s.timerClock, { transform: [{ scale: clockScale }] }]}>
+                {formatCountdown(secondsRemaining)}
+              </Animated.Text>
             </View>
 
             <View style={s.buttonArea}>

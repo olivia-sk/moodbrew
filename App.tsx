@@ -11,9 +11,12 @@ import {
 
 import { supabase } from './lib/supabase';
 import { AuthProvider } from './context/AuthContext';
+import { ReduceMotionProvider } from './lib/useReduceMotion';
 import { MoodContext, Tea } from './lib/types';
 import { TeaStoryResult } from './lib/teaStory';
 import ToastHost from './components/Toast/ToastHost';
+import FadeIn from './components/FadeIn/FadeIn';
+import { motion } from './theme';
 
 import WelcomeScreen   from './screens/Welcome';
 import SignInScreen    from './screens/SignIn';
@@ -37,6 +40,15 @@ type AppScreen =
   | 'welcome' | 'signIn' | 'signUp' | 'name' | 'home' | 'pantry' | 'journal'
   | 'moodInput' | 'matchCard' | 'kettle' | 'pairings' | 'settings' | 'discovery'
   | 'profile';
+
+// the auth screens and the linear brew flow read as one journey and get a
+// soft crossfade between steps. nav bar tab switches (home/pantry/journal/
+// profile) and settings/discovery stay instant, they're high frequency and
+// motion there would just be noise.
+const FADE_SCREENS = new Set<AppScreen>([
+  'welcome', 'signIn', 'signUp', 'name',
+  'moodInput', 'matchCard', 'kettle', 'pairings',
+]);
 
 export default function App() {
   // fonts
@@ -263,10 +275,18 @@ export default function App() {
   // toasthost sits on top of whatever screen is active.
   const app = (
     <SafeAreaProvider>
-      <AuthProvider>
-        {renderScreen()}
-        <ToastHost />
-      </AuthProvider>
+      <ReduceMotionProvider>
+        <AuthProvider>
+          {FADE_SCREENS.has(screen) ? (
+            <FadeIn key={screen} style={{ flex: 1 }} duration={motion.durationFast}>
+              {renderScreen()}
+            </FadeIn>
+          ) : (
+            renderScreen()
+          )}
+          <ToastHost />
+        </AuthProvider>
+      </ReduceMotionProvider>
     </SafeAreaProvider>
   );
 

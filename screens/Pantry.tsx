@@ -31,6 +31,7 @@ import {
   BOARD_HEIGHT,
   SLOT_COLOR,
   SLOT_HEIGHT,
+  SLOT_ROW_INSET,
   SLOT_WIDTH,
 } from '../components/ShelfRow/styles';
 import PressableScale from '../components/PressableScale/PressableScale';
@@ -56,6 +57,11 @@ import { showToast } from '../lib/toast';
 // the cabinet is 4 boards of 4 slots
 const CABINET_ROWS = 4;
 const SLOTS_PER_ROW = PANTRY_SLOT_COUNT / CABINET_ROWS;
+
+// the future brews shelf shows one row of the same width as a cabinet
+// board; it only needs to scroll once there are more wishlist teas than
+// that row can hold
+const WISHLIST_VISIBLE_SLOTS = SLOTS_PER_ROW;
 
 interface Props {
   onHomePress: () => void;
@@ -226,31 +232,44 @@ export default function PantryScreen({ onHomePress, onJournalPress, onProfilePre
           ))}
         </View>
 
-        {/* future brews: the horizontal wishlist shelf */}
+        {/* future brews: one row the same width as a cabinet board. it
+            reuses ShelfRow directly so the slots always land exactly under
+            the collection above regardless of device width; a fixed-gap
+            ScrollView only takes over once there's genuinely too much to
+            fit in a row, since that layout can't be pixel-matched to the
+            cabinet's space-between rhythm */}
         <Text style={s.sectionLabel}>Future brews</Text>
-        <View style={s.wishlistShelf}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={s.wishlistContent}
-          >
-            {wishlist.map((item) => (
-              <PressableScale key={item.id} onPress={() => handleWishlistPress(item)}>
-                <View style={s.wishlistSlot}>
-                  <Text style={s.wishlistLabel} numberOfLines={2}>
-                    {item.teaName}
-                  </Text>
-                </View>
-              </PressableScale>
-            ))}
-            {/* pad the row out to the cabinet's four slots so the shelf
-                furniture always matches the collection above it */}
-            {Array.from({ length: Math.max(0, 4 - wishlist.length) }, (_, index) => (
-              <View key={`empty-${index}`} style={s.wishlistSlot} />
-            ))}
-          </ScrollView>
-          <View style={s.wishlistBoard} />
-        </View>
+        {wishlist.length > WISHLIST_VISIBLE_SLOTS ? (
+          <View style={s.wishlistShelf}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={s.wishlistScrollContent}
+            >
+              {wishlist.map((item) => (
+                <PressableScale key={item.id} onPress={() => handleWishlistPress(item)}>
+                  <View style={s.wishlistSlot}>
+                    <Text style={s.wishlistLabel} numberOfLines={2}>
+                      {item.teaName}
+                    </Text>
+                  </View>
+                </PressableScale>
+              ))}
+            </ScrollView>
+            <View style={s.wishlistBoard} />
+          </View>
+        ) : (
+          <ShelfRow
+            slots={Array.from({ length: WISHLIST_VISIBLE_SLOTS }, (_, index) => {
+              const item = wishlist[index];
+              return {
+                key: item ? item.id : `empty-${index}`,
+                label: item?.teaName,
+                onPress: item ? () => handleWishlistPress(item) : undefined,
+              };
+            })}
+          />
+        )}
 
       </View>
 
@@ -262,6 +281,16 @@ export default function PantryScreen({ onHomePress, onJournalPress, onProfilePre
         onSelect={handleSelectTea}
         onClose={() => { setPickerVisible(false); setSelectedSlotIndex(null); }}
         onTeaCreated={(tea) => setTeaOptions((current) => [...current, tea])}
+        onTeaDeleted={(tea) => {
+          // drop it from the cached picker list, then resync the shelf,
+          // the database cascade may have just emptied one of the slots
+          setTeaOptions((current) => current.filter((option) => option.Name !== tea.Name));
+          if (user) {
+            fetchPantrySlots(user.id)
+              .then(setSlots)
+              .catch(() => showToast('Could not refresh your pantry'));
+          }
+        }}
       />
     </SafeAreaView>
     </View>
@@ -310,17 +339,16 @@ const s = StyleSheet.create({
     marginBottom: 65,
   },
 
-  // future brews shelf: slots scroll horizontally above a fixed board
+  // overflow future brews shelf: only mounted once there are more teas
+  // than fit in one row, so it's fine for its content width to run past
+  // the screen and actually scroll
   wishlistShelf: {
     width: '100%',
   },
-  // same slot rhythm as the cabinet rows: 31 insets with 32 gaps, so a
-  // four slot shelf lines up exactly with the collection above it
-  wishlistContent: {
-    paddingHorizontal: 31,
+  wishlistScrollContent: {
+    paddingHorizontal: SLOT_ROW_INSET,
     gap: 32,
     alignItems: 'flex-end',
-    minWidth: '100%',
   },
   wishlistSlot: {
     width: SLOT_WIDTH,

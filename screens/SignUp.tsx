@@ -10,6 +10,7 @@ import {
   TextInput,
   StatusBar,
   Alert,
+  Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -20,7 +21,8 @@ import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
 import FadeIn from '../components/FadeIn/FadeIn';
 import PressableScale from '../components/PressableScale/PressableScale';
-import MoodBrewDoodle from '../assets/images/mood-brew.svg';
+
+const moodBrewDoodle = require('../assets/images/mood-brew.png');
 
 interface Props {
   onSuccess: () => void;
@@ -77,7 +79,7 @@ export default function SignUpScreen({ onSuccess }: Props) {
             <View className={s.topSection}>
               <Text className={s.wordmark}>Mood Brew</Text>
               <View className={s.doodleWrap}>
-                <MoodBrewDoodle width={160} height={116} />
+                <Image source={moodBrewDoodle} style={{ width: 160, height: 116 }} resizeMode="contain" />
               </View>
             </View>
           </FadeIn>

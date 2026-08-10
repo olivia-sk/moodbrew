@@ -12,10 +12,11 @@
 // - buttons: x=16 y=680 w=358 h=96
 //   - "start brewing" btn: h=57
 //   - shuffle: y=82 h=14
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   StatusBar,
   StyleSheet,
   Text,
@@ -24,12 +25,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { colors, fonts, fontSize, spacing } from '../theme';
+import { colors, fonts, fontSize, motion, spacing } from '../theme';
 import CardStack, { cardNumberFor } from '../components/CardStack/CardStack';
+import PressableScale from '../components/PressableScale/PressableScale';
 import { loadTeaStory, TeaStoryResult } from '../lib/teaStory';
 import { shuffleTeaMatchFromPantry } from '../lib/teaMatching';
 import { showToast } from '../lib/toast';
 import { useAuth } from '../context/AuthContext';
+import { useReduceMotion } from '../lib/useReduceMotion';
 import { MoodContext, Tea } from '../lib/types';
 
 interface Props {
@@ -83,6 +86,11 @@ export default function MatchCardScreen({
   // popping back off the kettle screen renders the story immediately
   const [loading, setLoading] = useState(story === null);
   const [shuffling, setShuffling] = useState(false);
+  // card content only, so a shuffle reads as a card change on the index
+  // card metaphor while the frame and decoy stay still
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+  const contentRise = useRef(new Animated.Value(0)).current;
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
     // a valid story for this tea is already cached one level up, skip the network call entirely
@@ -103,9 +111,47 @@ export default function MatchCardScreen({
     if (story) onStartBrewing(story);
   };
 
+  const fadeContentOut = () =>
+    new Promise<void>((resolve) => {
+      if (reduceMotion) {
+        resolve();
+        return;
+      }
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 120,
+        easing: motion.easeIn,
+        useNativeDriver: true,
+      }).start(() => resolve());
+    });
+
+  const fadeContentIn = () => {
+    if (reduceMotion) {
+      contentOpacity.setValue(1);
+      contentRise.setValue(0);
+      return;
+    }
+    contentRise.setValue(6);
+    Animated.parallel([
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: motion.durationFast,
+        easing: motion.easeOut,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentRise, {
+        toValue: 0,
+        duration: motion.durationFast,
+        easing: motion.easeOut,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const handleShuffle = async () => {
     if (!user || shuffling) return;
     setShuffling(true);
+    await fadeContentOut();
     try {
       const { tea: nextTea, usedFallback } = await shuffleTeaMatchFromPantry(user.id, tea.Name);
       if (usedFallback) {
@@ -116,6 +162,7 @@ export default function MatchCardScreen({
       Alert.alert('Could not shuffle', (error as Error).message);
     } finally {
       setShuffling(false);
+      fadeContentIn();
     }
   };
 
@@ -134,39 +181,42 @@ export default function MatchCardScreen({
         {/* card01: sits at y=150 in figma, so we push it down from the back button */}
         <View style={s.cardSpacer} />
         <CardStack>
-          {/* tea name row: y=48 h=23 */}
-          <View style={s.cardHeaderRow}>
-            <Text style={s.heroTitle}>{tea.Name}</Text>
-            <Text style={s.cardNumber}>{cardNumberFor(tea.Name)}</Text>
-          </View>
+          <Animated.View
+            style={{ opacity: contentOpacity, transform: [{ translateY: contentRise }] }}
+          >
+            {/* tea name row: y=48 h=23 */}
+            <View style={s.cardHeaderRow}>
+              <Text style={s.heroTitle}>{tea.Name}</Text>
+              <Text style={s.cardNumber}>{cardNumberFor(tea.Name)}</Text>
+            </View>
 
-          {/* origin field: y=119 */}
-          <View style={s.field}>
-            <Text style={s.fieldLabel}>Origin</Text>
-            <Text style={s.fieldValue}>{tea.Traditional_Origin}</Text>
-          </View>
+            {/* origin field: y=119 */}
+            <View style={s.field}>
+              <Text style={s.fieldLabel}>Origin</Text>
+              <Text style={s.fieldValue}>{tea.Traditional_Origin}</Text>
+            </View>
 
-          {/* category field: y=197 */}
-          <View style={s.field}>
-            <Text style={s.fieldLabel}>Category</Text>
-            <Text style={s.fieldValue}>{tea.Category}</Text>
-          </View>
+            {/* category field: y=197 */}
+            <View style={s.field}>
+              <Text style={s.fieldLabel}>Category</Text>
+              <Text style={s.fieldValue}>{tea.Category}</Text>
+            </View>
 
-          {/* why this tea field: y=275 */}
-          <View style={s.field}>
-            <Text style={s.fieldLabel}>Why this tea</Text>
-            {loading
-              ? <View style={s.storyLoading}><ActivityIndicator color={colors['accent-olive']} /></View>
-              : <Text style={s.storyValue}>{story?.why_this_tea}</Text>
-            }
-          </View>
+            {/* why this tea field: y=275 */}
+            <View style={s.field}>
+              <Text style={s.fieldLabel}>Why this tea</Text>
+              {loading
+                ? <View style={s.storyLoading}><ActivityIndicator color={colors['accent-olive']} /></View>
+                : <Text style={s.storyValue}>{story?.why_this_tea}</Text>
+              }
+            </View>
+          </Animated.View>
         </CardStack>
 
         {/* buttons area: y=680 */}
         <View style={s.buttons}>
-          <TouchableOpacity
+          <PressableScale
             style={s.actionBtn}
-            activeOpacity={0.85}
             onPress={handleStartBrewing}
             disabled={loading || shuffling}
           >
@@ -174,12 +224,11 @@ export default function MatchCardScreen({
               ? <ActivityIndicator color={colors['light-100']} />
               : <Text style={s.actionBtnText}>Start brewing</Text>
             }
-          </TouchableOpacity>
+          </PressableScale>
 
           {/* shuffle: y=82 within buttons frame */}
-          <TouchableOpacity
+          <PressableScale
             style={s.shuffleRow}
-            activeOpacity={0.7}
             onPress={handleShuffle}
             disabled={shuffling || loading}
           >
@@ -192,7 +241,7 @@ export default function MatchCardScreen({
                 </>
               )
             }
-          </TouchableOpacity>
+          </PressableScale>
         </View>
 
       </View>

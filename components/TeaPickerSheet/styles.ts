@@ -7,6 +7,12 @@ export const teaPickerSheetStyles = StyleSheet.create({
     backgroundColor: colors['dark-100-o20'],
     justifyContent: 'flex-end',
   },
+  // keyboardavoidingview just needs the layout job, the fill/opacity
+  // already lives on the animated backdrop wrapping it
+  backdropKeyboard: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   sheet: {
     backgroundColor: colors['light-100'],
     borderTopLeftRadius: 20,
@@ -30,10 +36,57 @@ export const teaPickerSheetStyles = StyleSheet.create({
     color: colors['accent-olive'],
     marginBottom: spacing.md,
   },
-  row: {
-    paddingVertical: spacing.md,
+  // rowWrap carries the divider so the delete button sits inside the same
+  // bordered line as the tea it belongs to
+  rowWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: colors['light-300'],
+  },
+  row: {
+    flex: 1,
+    paddingVertical: spacing.md,
+  },
+  deleteBtn: {
+    paddingVertical: spacing.sm,
+    paddingLeft: spacing.md,
+  },
+  deleteBtnText: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize['mono-small'],
+    color: colors['brand-brown'],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // scope filter chips under the search box
+  scopeRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  scopeChip: {
+    borderWidth: 1,
+    borderColor: colors['brand-text-200'],
+    borderRadius: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors['light-100'],
+  },
+  scopeChipActive: {
+    backgroundColor: colors['dark-100'],
+    borderColor: colors['dark-100'],
+  },
+  scopeChipText: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize['mono-small'],
+    color: colors['brand-text-100'],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  scopeChipTextActive: {
+    color: colors['light-100'],
   },
   rowName: {
     fontFamily: fonts.mono,

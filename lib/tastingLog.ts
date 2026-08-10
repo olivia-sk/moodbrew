@@ -81,3 +81,17 @@ export async function logTastingSession(payload: TastingLogPayload): Promise<voi
     throw new Error(`failed to log tasting session: ${error.message}`);
   }
 }
+
+// deletes a single tasting session. the userId filter is defense in depth
+// alongside the rls policy that already scopes deletes to their owner.
+export async function deleteJournalEntry(id: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('tasting_logs')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error(`failed to delete journal entry: ${error.message}`);
+  }
+}

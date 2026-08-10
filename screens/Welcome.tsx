@@ -21,10 +21,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { authStyles as s } from '../styles/auth';
 import FadeIn from '../components/FadeIn/FadeIn';
 import PressableScale from '../components/PressableScale/PressableScale';
-import MoodBrewDoodle from '../assets/images/mood-brew.svg';
-
-const googleIcon = require('../assets/images/google.png');
-const appleIcon  = require('../assets/images/apple.png');
+const googleIcon    = require('../assets/images/google.png');
+const appleIcon     = require('../assets/images/apple.png');
+const moodBrewDoodle = require('../assets/images/mood-brew.png');
 
 interface Props {
   onEmailPress: () => void;
@@ -45,7 +44,7 @@ export default function WelcomeScreen({ onEmailPress }: Props) {
           <View className={s.topSectionWelcome}>
             <Text className={s.wordmark}>Mood Brew</Text>
             <View className={s.doodleWrap}>
-              <MoodBrewDoodle width={160} height={116} />
+              <Image source={moodBrewDoodle} style={{ width: 160, height: 116 }} resizeMode="contain" />
             </View>
           </View>
         </FadeIn>

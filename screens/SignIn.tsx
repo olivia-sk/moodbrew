@@ -10,7 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   StatusBar,
-  Alert,
+  Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -19,9 +19,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authStyles as s } from '../styles/auth';
 import { supabase } from '../lib/supabase';
+import { showToast } from '../lib/toast';
 import FadeIn from '../components/FadeIn/FadeIn';
 import PressableScale from '../components/PressableScale/PressableScale';
-import MoodBrewDoodle from '../assets/images/mood-brew.svg';
+
+const moodBrewDoodle = require('../assets/images/mood-brew.png');
 
 interface Props {
   onSuccess:     () => void;
@@ -35,7 +37,7 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) {
-      Alert.alert('Missing fields', 'Please enter your email and password.');
+      showToast('Please enter your email and password.');
       return;
     }
     setLoading(true);
@@ -45,7 +47,7 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
     });
     setLoading(false);
     if (error) {
-      Alert.alert('Sign in failed', error.message);
+      showToast(error.message);
     } else {
       onSuccess();
     }
@@ -53,14 +55,14 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('Enter your email', 'Type your email above then tap Forgot password.');
+      showToast('Type your email above then tap Forgot password.');
       return;
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
     if (error) {
-      Alert.alert('Error', error.message);
+      showToast(error.message);
     } else {
-      Alert.alert('Check your inbox', `A reset link was sent to ${email.trim()}.`);
+      showToast(`A reset link was sent to ${email.trim()}.`);
     }
   };
 
@@ -89,7 +91,7 @@ export default function SignInScreen({ onSuccess, onSignUpPress }: Props) {
             <View className={s.topSection}>
               <Text className={s.wordmark}>Mood Brew</Text>
               <View className={s.doodleWrap}>
-                <MoodBrewDoodle width={160} height={116} />
+                <Image source={moodBrewDoodle} style={{ width: 160, height: 116 }} resizeMode="contain" />
               </View>
             </View>
           </FadeIn>

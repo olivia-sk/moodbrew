@@ -8,17 +8,19 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { showToast } from '../lib/toast';
-import { fetchJournalEntries, JournalEntry } from '../lib/tastingLog';
+import { deleteJournalEntry, fetchJournalEntries, JournalEntry } from '../lib/tastingLog';
 import NavBar, { NavTab } from '../components/NavBar/NavBar';
 import PressableScale from '../components/PressableScale/PressableScale';
 import FadeIn from '../components/FadeIn/FadeIn';
@@ -60,12 +62,28 @@ function SensorySlider({
   );
 }
 
-function JournalCard({ entry }: { entry: JournalEntry }) {
+function JournalCard({
+  entry,
+  onDelete,
+}: {
+  entry: JournalEntry;
+  onDelete: (entry: JournalEntry) => void;
+}) {
   return (
     <PressableScale style={s.card}>
       <View style={s.cardHeader}>
-        <Text style={s.cardTitle}>{entry.teaName}</Text>
-        <Text style={s.cardDate}>{formatEntryDate(entry.createdAt)}</Text>
+        <View style={s.cardHeaderText}>
+          <Text style={s.cardTitle}>{entry.teaName}</Text>
+          <Text style={s.cardDate}>{formatEntryDate(entry.createdAt)}</Text>
+        </View>
+        <TouchableOpacity
+          style={s.deleteBtn}
+          activeOpacity={0.7}
+          onPress={() => onDelete(entry)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={s.deleteBtnText}>remove</Text>
+        </TouchableOpacity>
       </View>
 
       {entry.moodTags.length > 0 && (
@@ -130,6 +148,32 @@ export default function JournalScreen({ onHomePress, onPantryPress, onProfilePre
     if (tab === 'profile') onProfilePress();
   };
 
+  const handleDeleteEntry = (entry: JournalEntry) => {
+    if (!user) return;
+    Alert.alert(
+      'Delete this entry?',
+      `Your ${entry.teaName} tasting note from ${formatEntryDate(entry.createdAt)} will be gone for good.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const previous = entries;
+            setEntries((current) => current.filter((e) => e.id !== entry.id));
+            try {
+              await deleteJournalEntry(entry.id, user.id);
+              showToast('Entry deleted');
+            } catch (error) {
+              setEntries(previous);
+              showToast((error as Error).message);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={s.root}>
       <SafeAreaView style={s.safe}>
@@ -161,7 +205,7 @@ export default function JournalScreen({ onHomePress, onPantryPress, onProfilePre
                 // cards rise in one after another, the stagger caps out so a
                 // long archive never keeps the reader waiting
                 <FadeIn key={entry.id} delay={Math.min(index, 6) * 70}>
-                  <JournalCard entry={entry} />
+                  <JournalCard entry={entry} onDelete={handleDeleteEntry} />
                 </FadeIn>
               ))}
             </ScrollView>
@@ -228,6 +272,13 @@ const s = StyleSheet.create({
     alignItems: 'flex-start',
     gap: spacing.sm,
   },
+  cardHeaderText: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
   cardTitle: {
     flex: 1,
     fontFamily: fonts.serif,
@@ -241,6 +292,18 @@ const s = StyleSheet.create({
     color: colors['brand-text-200'],
     letterSpacing: 0.5,
     paddingTop: 4,
+  },
+  // small destructive label, same pattern as the custom tea "remove"
+  // button on the tea picker sheet
+  deleteBtn: {
+    paddingTop: 4,
+  },
+  deleteBtnText: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize['mono-small'],
+    color: colors['brand-brown'],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 
   tagRow: {

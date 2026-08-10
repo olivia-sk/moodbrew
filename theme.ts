@@ -1,3 +1,19 @@
+import { Easing } from 'react-native';
+
+// ─── motion ────────────────────────────────────────────────────────────────
+export const motion = {
+  // interruptible press and grab feedback
+  spring: { stiffness: 300, damping: 20, mass: 0.6 },
+  // entrances: fades, rises, toasts
+  durationFast: 200,
+  durationBase: 250,
+  // sheets and larger travel
+  durationSlow: 300,
+  easeOut: Easing.out(Easing.cubic),
+  easeIn: Easing.in(Easing.cubic),
+  easeDrawer: Easing.bezier(0.32, 0.72, 0, 1),
+} as const;
+
 // ─── colors ────────────────────────────────────────────────────────────────
 export const colors = {
   // neutrals

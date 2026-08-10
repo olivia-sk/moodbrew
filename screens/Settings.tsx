@@ -12,7 +12,6 @@ import {
   StatusBar,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, fontSize, spacing } from '../theme';
@@ -28,18 +27,9 @@ export default function SettingsScreen({ onBack, onProfilePress }: Props) {
   const [signingOut, setSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: async () => {
-          setSigningOut(true);
-          await signOut();
-          // app.tsx's onAuthStateChange listener handles redirect to welcome
-        },
-      },
-    ]);
+    setSigningOut(true);
+    await signOut();
+    // app.tsx's onAuthStateChange listener handles redirect to welcome
   };
 
   return (

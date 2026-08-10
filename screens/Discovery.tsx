@@ -18,10 +18,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts, fontSize, spacing } from '../theme';
+import { colors, fonts, fontSize, motion, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import PressableScale from '../components/PressableScale/PressableScale';
 import FadeIn from '../components/FadeIn/FadeIn';
+import { useReduceMotion } from '../lib/useReduceMotion';
 import { showToast } from '../lib/toast';
 import { fetchDiscoveryDeck } from '../lib/discovery';
 import { formatCaffeineMg } from '../lib/format';
@@ -43,6 +44,7 @@ export default function DiscoveryScreen({ onBack }: Props) {
   const [deck, setDeck] = useState<Tea[]>([]);
   const [topIndex, setTopIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const reduceMotion = useReduceMotion();
 
   // drag position of the top card, rotation and like or pass hints
   // derive from its x value
@@ -79,32 +81,54 @@ export default function DiscoveryScreen({ onBack }: Props) {
     setTopIndex((index) => index + 1);
   };
 
-  // flings the top card off screen, records the verdict, then advances
-  const commitSwipe = (liked: boolean) => {
+  // the part of a swipe that isn't the animation: recording the verdict
+  // and moving to the next card. shared by the animated path and the
+  // reduce-motion path, which skips straight to this.
+  const resolveSwipe = (liked: boolean, tea: Tea, activeUser: NonNullable<typeof user>) => {
+    advance();
+    if (liked) {
+      addToWishlist(activeUser.id, tea.Name)
+        .then(() => showToast(`${tea.Name} shelved for future brews`))
+        .catch(() => showToast('Could not save that tea to your wishlist'));
+    }
+  };
+
+  // flings the top card off screen, records the verdict, then advances.
+  // gesture carries the release velocity through the exit so a hard flick
+  // leaves faster than a slow deliberate drag; button-triggered swipes have
+  // no gesture, so they get a default throw velocity instead.
+  const commitSwipe = (liked: boolean, gesture?: { vx: number; vy: number }) => {
     const tea = deckRef.current[topIndexRef.current];
     const activeUser = userRef.current;
     if (!tea || !activeUser) return;
 
-    Animated.timing(pan, {
+    if (reduceMotion) {
+      resolveSwipe(liked, tea, activeUser);
+      return;
+    }
+
+    const velocity = gesture
+      ? { x: gesture.vx * 1000, y: gesture.vy * 1000 }
+      : { x: liked ? 900 : -900, y: 0 };
+
+    Animated.spring(pan, {
       toValue: { x: liked ? SCREEN_WIDTH * 1.4 : -SCREEN_WIDTH * 1.4, y: 0 },
-      duration: 220,
+      velocity,
+      stiffness: 200,
+      damping: 30,
+      mass: 0.8,
+      overshootClamping: true,
       // the pan responder drives this value from js, so every animation
       // on it has to stay on the js driver too
       useNativeDriver: false,
-    }).start(() => {
-      advance();
-      if (liked) {
-        addToWishlist(activeUser.id, tea.Name)
-          .then(() => showToast(`${tea.Name} shelved for future brews`))
-          .catch(() => showToast('Could not save that tea to your wishlist'));
-      }
-    });
+    }).start(() => resolveSwipe(liked, tea, activeUser));
   };
 
-  const springBack = () => {
+  const springBack = (gesture?: { vx: number; vy: number }) => {
     Animated.spring(pan, {
       toValue: { x: 0, y: 0 },
-      friction: 6,
+      velocity: gesture ? { x: gesture.vx * 1000, y: gesture.vy * 1000 } : { x: 0, y: 0 },
+      ...motion.spring,
       useNativeDriver: false,
     }).start();
   };
@@ -119,15 +143,17 @@ export default function DiscoveryScreen({ onBack }: Props) {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_event, gesture) => {
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          commitSwipe(true);
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          commitSwipe(false);
+        // a fast confident flick commits even if it hasn't crossed the
+        // distance threshold yet, so the deck doesn't feel like it's
+        // refusing a quick swipe
+        const flick = Math.abs(gesture.vx) > 0.3 && Math.abs(gesture.dx) > 40;
+        if (flick || Math.abs(gesture.dx) > SWIPE_THRESHOLD) {
+          commitSwipe(Math.sign(gesture.dx) > 0, gesture);
         } else {
-          springBack();
+          springBack(gesture);
         }
       },
-      onPanResponderTerminate: springBack,
+      onPanResponderTerminate: () => springBack(),
     });
   }
 
@@ -165,6 +191,21 @@ export default function DiscoveryScreen({ onBack }: Props) {
     outputRange: [colors['dark-100'], colors['light-100']],
   });
   const topTea = deck[topIndex];
+  const nextTea = deck[topIndex + 1];
+
+  // the next card grows in from behind as the top card is dragged away,
+  // the standard deck trick, using the same pan.x distance driving the
+  // top card's own transform
+  const nextCardScale = pan.x.interpolate({
+    inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+    outputRange: [1, 0.96, 1],
+    extrapolate: 'clamp',
+  });
+  const nextCardOpacity = pan.x.interpolate({
+    inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+    outputRange: [1, 0.85, 1],
+    extrapolate: 'clamp',
+  });
 
   const renderCardBody = (tea: Tea) => (
     <>
@@ -237,6 +278,16 @@ export default function DiscoveryScreen({ onBack }: Props) {
                 {/* blank decoy card peeking out behind the deck, matching
                     the stacked index card look used across the app */}
                 <View style={s.decoyCard} />
+                {nextTea && (
+                  <Animated.View
+                    style={[
+                      s.card,
+                      { opacity: nextCardOpacity, transform: [{ scale: nextCardScale }] },
+                    ]}
+                  >
+                    {renderCardBody(nextTea)}
+                  </Animated.View>
+                )}
                 <Animated.View
                   style={[
                     s.card,

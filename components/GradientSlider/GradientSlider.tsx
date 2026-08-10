@@ -1,7 +1,7 @@
 // fine horizontal gradient slider, reused for the mood input craving dial
 // and the pairings screen tasting note sliders
 // built with react-native-svg and PanResponder so it needs no extra native dependency
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   GestureResponderEvent,
@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { motion } from '../../theme';
 import {
   GRADIENT_HIGH_COLOR,
   gradientSliderStyles as s,
@@ -68,16 +69,19 @@ export default function GradientSlider({
   // tactile feedback that the handle is live. the spring is interruptible
   // so quick grabs and releases stay smooth
   const thumbScale = useRef(new Animated.Value(1)).current;
-  const springThumbTo = (value: number) => {
+  const springThumbTo = (toValue: number) => {
     Animated.spring(thumbScale, {
-      toValue: value,
-      stiffness: 300,
-      damping: 20,
-      mass: 0.6,
+      toValue,
+      ...motion.spring,
       useNativeDriver: true,
     }).start();
   };
   const [trackWidth, setTrackWidth] = useState(0);
+
+  // the thumb's horizontal position lives on its own animated value driven
+  // straight off the pan responder, so dragging never waits on a react
+  // render of the parent's onChange to move the handle
+  const thumbX = useRef(new Animated.Value(0)).current;
 
   // the track's own width and its absolute position on screen, kept in
   // refs so the pan responder below always reads the latest numbers
@@ -94,6 +98,7 @@ export default function GradientSlider({
     const width = widthRef.current;
     if (width <= 0) return;
     const ratio = clampRatio((pageX - pageXRef.current) / width);
+    thumbX.setValue(ratio * width - THUMB_SIZE / 2);
     onChange(ratio);
   };
 
@@ -143,7 +148,13 @@ export default function GradientSlider({
     });
   }
 
-  const thumbLeft = trackWidth > 0 ? value * trackWidth - THUMB_SIZE / 2 : -THUMB_SIZE / 2;
+  // keeps the thumb positioned correctly for programmatic value changes
+  // (e.g. a parent resetting the slider) and once the track's width is
+  // first measured
+  useEffect(() => {
+    if (trackWidth <= 0) return;
+    thumbX.setValue(value * trackWidth - THUMB_SIZE / 2);
+  }, [value, trackWidth]);
 
   return (
     <View>
@@ -165,7 +176,10 @@ export default function GradientSlider({
           </Svg>
         </View>
         <Animated.View
-          style={[s.thumb, { left: thumbLeft, transform: [{ scale: thumbScale }] }]}
+          style={[
+            s.thumb,
+            { left: -THUMB_SIZE / 2, transform: [{ translateX: thumbX }, { scale: thumbScale }] },
+          ]}
         />
       </View>
 

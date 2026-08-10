@@ -49,3 +49,19 @@ export async function createCustomTea(teaName: string): Promise<CustomTeaResult>
     alreadyExisted: data?.alreadyExisted === true,
   };
 }
+
+// deletes one of the user's own custom teas. row level security only lets
+// a drinker delete rows they created with is_custom set, so a filter on
+// is_custom here is belt and suspenders rather than the real guard. the
+// database cascades the pantry row away; journal entries keep the name
+export async function deleteCustomTea(teaName: string): Promise<void> {
+  const { error } = await supabase
+    .from('tea-database')
+    .delete()
+    .eq('Name', teaName)
+    .eq('is_custom', true);
+
+  if (error) {
+    throw new Error(`could not delete that tea right now: ${error.message}`);
+  }
+}
